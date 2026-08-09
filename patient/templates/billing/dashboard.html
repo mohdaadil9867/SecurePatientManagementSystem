@@ -1,0 +1,128 @@
+{% extends 'billing/base.html' %}
+
+{% block title %}
+Billing Dashboard
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+
+Billing Dashboard
+
+</h2>
+
+<div class="row">
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5>Total Bills</h5>
+
+<h2>{{ total_bills }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5>Paid Bills</h5>
+
+<h2>{{ paid }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5>Pending Bills</h5>
+
+<h2>{{ pending }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<br>
+<div class="d-flex justify-content-between mb-3">
+
+<h4>
+
+Recent Bills
+
+</h4>
+
+<a href="{% url 'billing_list' %}" class="btn btn-primary">
+
+View All Bills
+
+</a>
+
+</div>
+
+<table class="table table-bordered table-hover">
+
+<thead>
+
+<tr>
+
+<th>Bill No</th>
+
+<th>Patient</th>
+
+<th>Total</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for bill in recent_bills %}
+
+<tr>
+
+<td>{{ bill.bill_number }}</td>
+
+<td>{{ bill.medical_record.patient.patient_id }}</td>
+
+<td>₹ {{ bill.total_amount }}</td>
+
+<td>
+
+{{ bill.payment_status }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}

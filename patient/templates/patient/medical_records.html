@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}
+Medical Records
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                <i class="bi bi-file-medical text-primary"></i>
+
+                Medical Records
+
+            </h2>
+
+            <p class="text-muted">
+
+                View all your medical history and diagnosis reports.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Search -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <input
+                type="text"
+                id="searchInput"
+                class="form-control"
+                placeholder="Search Doctor, Department or Diagnosis...">
+
+        </div>
+
+    </div>
+
+    <!-- Records Table -->
+
+    <div class="card shadow border-0">
+
+        <div class="card-header bg-primary text-white">
+
+            <h5 class="mb-0">
+
+                Medical History
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle" id="recordsTable">
+
+                    <thead class="table-primary">
+
+                    <tr>
+
+                        <th>Visit Date</th>
+
+                        <th>Doctor</th>
+
+                        <th>Department</th>
+
+                        <th>Diagnosis</th>
+
+                        <th>Prescription</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for record in medical_records %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ record.visit_date }}
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-info">
+
+                                {{ record.doctor_name }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ record.department }}
+
+                        </td>
+
+                        <td>
+
+                            {{ record.diagnosis }}
+
+                        </td>
+
+                        <td>
+
+                            {{ record.prescription|truncatechars:35 }}
+
+                        </td>
+
+                        <td>
+
+                            {% if record.status %}
+
+                            <span class="badge bg-success">
+
+                                Active
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-danger">
+
+                                Inactive
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6" class="text-center text-muted">
+
+                            No Medical Records Available.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Search Script -->
+
+<script>
+
+document.getElementById("searchInput").addEventListener("keyup", function(){
+
+let value=this.value.toLowerCase();
+
+let rows=document.querySelectorAll("#recordsTable tbody tr");
+
+rows.forEach(function(row){
+
+row.style.display=row.innerText.toLowerCase().includes(value) ? "" : "none";
+
+});
+
+});
+
+</script>
+
+{% endblock %}

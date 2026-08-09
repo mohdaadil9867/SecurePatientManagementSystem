@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}
+Claim Details
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+Insurance Claim Review
+</h2>
+
+<!-- Patient -->
+
+<div class="card shadow mb-4">
+
+<div class="card-header bg-primary text-white">
+
+Patient Information
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-3 text-center">
+
+{% if patient.photo %}
+
+<img
+src="{{ patient.photo.url }}"
+class="img-fluid rounded-circle"
+style="height:180px;width:180px;object-fit:cover;">
+
+{% endif %}
+
+</div>
+
+<div class="col-md-9">
+
+<p><strong>Patient ID :</strong> {{ patient.patient_id }}</p>
+
+<p><strong>Name :</strong>
+
+{{ patient.first_name }}
+
+{{ patient.last_name }}
+
+</p>
+
+<p><strong>Gender :</strong>
+
+{{ patient.gender }}
+
+</p>
+
+<p><strong>Blood Group :</strong>
+
+{{ patient.blood_group }}
+
+</p>
+
+<p><strong>Phone :</strong>
+
+{{ patient.phone_number }}
+
+</p>
+
+<p><strong>Email :</strong>
+
+{{ patient.email }}
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Medical -->
+
+<div class="card shadow mb-4">
+
+<div class="card-header bg-success text-white">
+
+Medical Record
+
+</div>
+
+<div class="card-body">
+
+<p>
+
+<strong>Doctor :</strong>
+
+{{ medical_record.doctor_name }}
+
+</p>
+
+<p>
+
+<strong>Department :</strong>
+
+{{ medical_record.department }}
+
+</p>
+
+<p>
+
+<strong>Diagnosis :</strong>
+
+{{ medical_record.diagnosis }}
+
+</p>
+
+<p>
+
+<strong>Treatment :</strong>
+
+{{ medical_record.treatment }}
+
+</p>
+
+<p>
+
+<strong>Prescription :</strong>
+
+{{ medical_record.prescription }}
+
+</p>
+
+{% if medical_record.medical_report %}
+
+<a
+
+href="{{ medical_record.medical_report.url }}"
+
+target="_blank"
+
+class="btn btn-outline-primary">
+
+View Report
+
+</a>
+
+{% endif %}
+
+</div>
+
+</div>
+
+<!-- Billing -->
+
+<div class="card shadow mb-4">
+
+<div class="card-header bg-warning">
+
+Billing Details
+
+</div>
+
+<div class="card-body">
+
+<table class="table">
+
+<tr>
+
+<th>Bill Number</th>
+
+<td>{{ bill.bill_number }}</td>
+
+</tr>
+
+<tr>
+
+<th>Total Amount</th>
+
+<td>₹ {{ bill.total_amount }}</td>
+
+</tr>
+
+<tr>
+
+<th>Bill Date</th>
+
+<td>{{ bill.bill_date }}</td>
+
+</tr>
+
+<tr>
+
+<th>Status</th>
+
+<td>{{ bill.payment_status }}</td>
+
+</tr>
+
+</table>
+
+<a
+
+href="{% url 'download_bill' bill.id %}"
+
+class="btn btn-danger">
+
+Download Bill PDF
+
+</a>
+
+</div>
+
+</div>
+
+<!-- Claim -->
+
+<div class="card shadow">
+
+<div class="card-header bg-dark text-white">
+
+Review Claim
+
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="mb-3">
+
+<label>Status</label>
+
+<select
+
+name="status"
+
+class="form-select">
+
+<option value="Pending">
+
+Pending
+
+</option>
+
+<option value="Under Review">
+
+Under Review
+
+</option>
+
+<option value="Approved">
+
+Approved
+
+</option>
+
+<option value="Rejected">
+
+Rejected
+
+</option>
+
+</select>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Approved Amount
+
+</label>
+
+<input
+
+type="number"
+
+step="0.01"
+
+name="approved_amount"
+
+value="{{ claim.approved_amount }}"
+
+class="form-control">
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Remarks
+
+</label>
+
+<textarea
+
+name="remarks"
+
+rows="5"
+
+class="form-control">{{ claim.remarks }}</textarea>
+
+</div>
+
+<button
+
+class="btn btn-success">
+
+Save Decision
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

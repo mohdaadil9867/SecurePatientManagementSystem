@@ -1,0 +1,36 @@
+<nav class="top-navbar">
+
+    <div>
+
+        <h4>
+
+            Patient Portal
+
+        </h4>
+
+    </div>
+
+    <div class="user-box">
+
+        {% if patient.photo %}
+
+            <img src="{{ patient.photo.url }}" class="profile-image">
+
+        {% else %}
+
+            <img src="https://ui-avatars.com/api/?name={{ request.user.first_name }}+{{ request.user.last_name }}"
+                 class="profile-image">
+
+        {% endif %}
+
+        <span>
+
+            {{ request.user.first_name }}
+
+            {{ request.user.last_name }}
+
+        </span>
+
+    </div>
+
+</nav>

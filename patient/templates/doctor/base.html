@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Doctor Portal</title>
+
+</head>
+
+<body>
+
+<h1>Doctor Portal</h1>
+
+<hr>
+
+<a href="{% url 'doctor_dashboard' %}">Dashboard</a>
+
+|
+
+<a href="{% url 'doctor_patients' %}">
+My Patients
+</a>
+
+|
+
+<a href="{% url 'doctor_records' %}">
+Medical Records
+</a>
+
+|
+
+<a href="{% url 'doctor_profile' %}">
+Profile
+</a>
+
+|
+
+<a href="{% url 'doctor_logout' %}">
+Logout
+</a>
+
+<hr>
+
+{% block content %}
+{% endblock %}
+
+</body>
+
+</html>

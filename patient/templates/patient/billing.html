@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}
+Billing
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                <i class="bi bi-receipt-cutoff text-primary"></i>
+
+                Billing Management
+
+            </h2>
+
+            <p class="text-muted">
+
+                View your bills and payment details.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Search -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <input
+                type="text"
+                id="searchBill"
+                class="form-control"
+                placeholder="Search Bill Number...">
+
+        </div>
+
+    </div>
+
+    <!-- Bills -->
+
+    <div class="card shadow border-0">
+
+        <div class="card-header bg-primary text-white">
+
+            <h5 class="mb-0">
+
+                Billing History
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle" id="billTable">
+
+                    <thead class="table-primary">
+
+                    <tr>
+
+                        <th>Bill No.</th>
+
+                        <th>Date</th>
+
+                        <th>Total Amount</th>
+
+                        <th>Payment Method</th>
+
+                        <th>Status</th>
+
+                        <th>Bill</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for bill in bills %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+
+                                {{ bill.bill_number }}
+
+                            </strong>
+
+                        </td>
+
+                        <td>
+
+                            {{ bill.bill_date }}
+
+                        </td>
+
+                        <td>
+
+                            ₹ {{ bill.total_amount }}
+
+                        </td>
+
+                        <td>
+
+                            {{ bill.payment_method }}
+
+                        </td>
+
+                        <td>
+
+                            {% if bill.payment_status == "Paid" %}
+
+                                <span class="badge bg-success">
+
+                                    Paid
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    Pending
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <a href="{% url 'download-bill' bill.id %}"
+
+                               class="btn btn-primary btn-sm">
+
+                                <i class="bi bi-download"></i>
+
+                                Download
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6" class="text-center">
+
+                            No Bills Available
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+document.getElementById("searchBill").addEventListener("keyup",function(){
+
+let value=this.value.toLowerCase();
+
+let rows=document.querySelectorAll("#billTable tbody tr");
+
+rows.forEach(function(row){
+
+row.style.display=row.innerText.toLowerCase().includes(value) ? "" : "none";
+
+});
+
+});
+
+</script>
+
+{% endblock %}

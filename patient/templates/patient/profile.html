@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Profile
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row">
+
+        <!-- Profile Card -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow border-0">
+
+               <div class="text-center mb-4">
+
+    {% if patient.photo %}
+
+    <a href="{{ patient.photo.url }}" target="_blank">
+
+        <img
+            src="{{ patient.photo.url }}"
+            class="rounded-circle shadow"
+            width="180"
+            height="180"
+            style="object-fit:cover; cursor:pointer;"
+            alt="Patient Photo"
+        >
+
+    </a>
+
+    {% else %}
+
+    <img
+        src="https://via.placeholder.com/180"
+        class="rounded-circle shadow"
+        alt="No Image"
+    >
+
+    {% endif %}
+
+</div>
+
+            </div>
+
+        </div>
+
+        <!-- Information -->
+
+        <div class="col-lg-8">
+
+            <div class="card shadow border-0">
+
+                <div class="card-header bg-primary text-white">
+
+                    <h5 class="mb-0">
+
+                        Personal Information
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Patient ID</strong>
+
+                            <br>
+
+                            {{ patient.patient_id }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Full Name</strong>
+
+                            <br>
+
+                            {{ patient.first_name }}
+                            {{ patient.last_name }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Email</strong>
+
+                            <br>
+
+                            {{ patient.email }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Phone Number</strong>
+
+                            <br>
+
+                            {{ patient.phone_number }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Gender</strong>
+
+                            <br>
+
+                            {{ patient.gender }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Date of Birth</strong>
+
+                            <br>
+
+                            {{ patient.date_of_birth }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Age</strong>
+
+                            <br>
+
+                            {{ patient.age }} Years
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Blood Group</strong>
+
+                            <br>
+
+                            {{ patient.blood_group }}
+
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+
+                            <strong>Address</strong>
+
+                            <br>
+
+                            {{ patient.address }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <strong>Emergency Contact</strong>
+
+                            <br>
+
+                            {{ patient.emergency_contact_number }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

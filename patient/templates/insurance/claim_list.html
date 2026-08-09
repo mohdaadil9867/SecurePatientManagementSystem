@@ -1,0 +1,257 @@
+{% extends "insurance/base.html" %}
+
+{% block title %}
+Insurance Claims
+{% endblock %}
+
+{% block page_title %}
+Insurance Claims
+{% endblock %}
+
+{% block content %}
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<form method="get">
+
+<div class="row">
+
+<div class="col-md-5">
+
+<input
+type="text"
+name="search"
+value="{{ search }}"
+class="form-control"
+placeholder="Search Claim ID / Patient">
+
+</div>
+
+<div class="col-md-3">
+
+<select
+name="status"
+class="form-select">
+
+<option value="">All Status</option>
+
+<option value="Pending"
+{% if status == "Pending" %}selected{% endif %}>
+Pending
+</option>
+
+<option value="Under Review"
+{% if status == "Under Review" %}selected{% endif %}>
+Under Review
+</option>
+
+<option value="Approved"
+{% if status == "Approved" %}selected{% endif %}>
+Approved
+</option>
+
+<option value="Rejected"
+{% if status == "Rejected" %}selected{% endif %}>
+Rejected
+</option>
+
+</select>
+
+</div>
+
+<div class="col-md-2">
+
+<button class="btn btn-primary w-100">
+
+Search
+
+</button>
+
+</div>
+
+<div class="col-md-2">
+
+<a
+href="{% url 'insurance_claim_list' %}"
+class="btn btn-secondary w-100">
+
+Reset
+
+</a>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+<div class="card shadow mt-4">
+
+<div class="card-header bg-primary text-white">
+
+Insurance Claims
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-hover align-middle">
+
+<thead>
+
+<tr>
+
+<th>Claim ID</th>
+
+<th>Patient</th>
+
+<th>Bill No.</th>
+
+<th>Amount</th>
+
+<th>Status</th>
+
+<th>Date</th>
+
+<th width="180">Actions</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for claim in claims %}
+
+<tr>
+
+<td>
+
+{{ claim.claim_id }}
+
+</td>
+
+<td>
+
+{{ claim.patient.patient_id }}
+
+<br>
+
+<small>
+
+{{ claim.patient.first_name }}
+
+{{ claim.patient.last_name }}
+
+</small>
+
+</td>
+
+<td>
+
+{{ claim.bill.bill_number }}
+
+</td>
+
+<td>
+
+₹ {{ claim.claim_amount }}
+
+</td>
+
+<td>
+
+{% if claim.claim_status == "Pending" %}
+
+<span class="badge bg-warning">
+
+Pending
+
+</span>
+
+{% elif claim.claim_status == "Approved" %}
+
+<span class="badge bg-success">
+
+Approved
+
+</span>
+
+{% elif claim.claim_status == "Rejected" %}
+
+<span class="badge bg-danger">
+
+Rejected
+
+</span>
+
+{% else %}
+
+<span class="badge bg-info">
+
+Under Review
+
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{{ claim.applied_date }}
+
+</td>
+
+<td>
+
+<a
+href="{% url 'insurance_claim_detail' claim.id %}"
+class="btn btn-primary btn-sm">
+
+View
+
+</a>
+
+<a
+href="{% url 'download_bill' claim.bill.id %}"
+class="btn btn-success btn-sm">
+
+PDF
+
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="7" class="text-center">
+
+No Claims Found
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

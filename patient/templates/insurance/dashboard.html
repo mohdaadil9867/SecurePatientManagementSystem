@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}
+Insurance Dashboard
+{% endblock %}
+
+{% block page_title %}
+Insurance Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+    <div class="col-md-3 mb-4">
+        <div class="card dashboard-card bg-warning text-white">
+            <div class="card-body text-center">
+                <h2>{{ pending }}</h2>
+                <h5>Pending Claims</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card dashboard-card bg-info text-white">
+            <div class="card-body text-center">
+                <h2>{{ review }}</h2>
+                <h5>Under Review</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card dashboard-card bg-success text-white">
+            <div class="card-body text-center">
+                <h2>{{ approved }}</h2>
+                <h5>Approved</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card dashboard-card bg-danger text-white">
+            <div class="card-body text-center">
+                <h2>{{ rejected }}</h2>
+                <h5>Rejected</h5>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="row">
+
+<div class="col-lg-8">
+
+<div class="card shadow">
+
+<div class="card-header bg-primary text-white">
+
+<h5 class="mb-0">
+
+Recent Insurance Claims
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-hover align-middle">
+
+<thead>
+
+<tr>
+
+<th>Claim ID</th>
+
+<th>Patient</th>
+
+<th>Status</th>
+
+<th>Date</th>
+
+<th></th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for claim in recent_claims %}
+
+<tr>
+
+<td>
+
+{{ claim.claim_id }}
+
+</td>
+
+<td>
+
+{{ claim.patient.patient_id }}
+
+</td>
+
+<td>
+
+{% if claim.claim_status == "Pending" %}
+
+<span class="badge bg-warning">
+
+Pending
+
+</span>
+
+{% elif claim.claim_status == "Approved" %}
+
+<span class="badge bg-success">
+
+Approved
+
+</span>
+
+{% elif claim.claim_status == "Rejected" %}
+
+<span class="badge bg-danger">
+
+Rejected
+
+</span>
+
+{% else %}
+
+<span class="badge bg-info">
+
+Under Review
+
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{{ claim.applied_date }}
+
+</td>
+
+<td>
+
+<a href="{% url 'insurance_claim_detail' claim.id %}"
+
+class="btn btn-primary btn-sm">
+
+View
+
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="5" class="text-center">
+
+No Claims Found
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-lg-4">
+
+<div class="card shadow">
+
+<div class="card-header bg-dark text-white">
+
+<h5 class="mb-0">
+
+Latest Notifications
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+{% for claim in notifications %}
+
+<div class="border-bottom py-3">
+
+<strong>
+
+{{ claim.patient.patient_id }}
+
+</strong>
+
+<br>
+
+submitted
+
+<strong>
+
+{{ claim.claim_id }}
+
+</strong>
+
+<br>
+
+<small class="text-muted">
+
+{{ claim.created_at }}
+
+</small>
+
+<br><br>
+
+<a href="{% url 'insurance_claim_detail' claim.id %}"
+
+class="btn btn-outline-primary btn-sm">
+
+Review
+
+</a>
+
+</div>
+
+{% empty %}
+
+<p class="text-center">
+
+No Pending Claims
+
+</p>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="row mt-4">
+
+<div class="col-md-6">
+
+<div class="card shadow">
+
+<div class="card-header bg-success text-white">
+
+Quick Statistics
+
+</div>
+
+<div class="card-body">
+
+<table class="table">
+
+<tr>
+
+<td>Total Pending</td>
+
+<td>
+
+<strong>{{ pending }}</strong>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>Under Review</td>
+
+<td>
+
+<strong>{{ review }}</strong>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>Approved</td>
+
+<td>
+
+<strong>{{ approved }}</strong>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>Rejected</td>
+
+<td>
+
+<strong>{{ rejected }}</strong>
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-6">
+
+<div class="card shadow">
+
+<div class="card-header bg-info text-white">
+
+Insurance Workflow
+
+</div>
+
+<div class="card-body text-center">
+
+<h5>
+
+Patient
+
+</h5>
+
+↓
+
+<h5>
+
+Claim Submitted
+
+</h5>
+
+↓
+
+<h5>
+
+Insurance Review
+
+</h5>
+
+↓
+
+<h5>
+
+Approve / Reject
+
+</h5>
+
+↓
+
+<h5>
+
+Patient Portal Updated
+
+</h5>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

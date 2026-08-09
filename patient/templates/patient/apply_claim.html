@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}
+Apply Insurance Claim
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row">
+
+        <!-- Left Card -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow border-0">
+
+                <div class="card-header bg-primary text-white">
+
+                    Claim Information
+
+                </div>
+
+                <div class="card-body">
+
+                    <h5>{{ request.user.first_name }} {{ request.user.last_name }}</h5>
+
+                    <hr>
+
+                    <p>
+
+                        <strong>Patient ID</strong><br>
+
+                        {{ request.user.username }}
+
+                    </p>
+
+                    <p>
+
+                        <strong>Purpose</strong><br>
+
+                        Submit your insurance claim for hospital bills.
+
+                    </p>
+
+                    <p>
+
+                        <strong>Instructions</strong>
+
+                    </p>
+
+                    <ul>
+
+                        <li>Select your Bill.</li>
+
+                        <li>Choose Insurance Company.</li>
+
+                        <li>Enter Policy Number.</li>
+
+                        <li>Upload Supporting Documents.</li>
+
+                        <li>Click Submit Claim.</li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Right Form -->
+
+        <div class="col-lg-8">
+
+            <div class="card shadow border-0">
+
+                <div class="card-header bg-success text-white">
+
+                    New Insurance Claim
+
+                </div>
+
+                <div class="card-body">
+
+                    <form method="POST"
+                          enctype="multipart/form-data">
+
+                        {% csrf_token %}
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Hospital Bill
+
+                                </label>
+
+                                {{ form.bill }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Insurance Company
+
+                                </label>
+
+                                {{ form.insurance_company }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Policy Number
+
+                                </label>
+
+                                {{ form.policy_number }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Claim Amount
+
+                                </label>
+
+                                {{ form.claim_amount }}
+
+                            </div>
+
+                            <div class="col-12 mb-3">
+
+                                <label class="form-label">
+
+                                    Reason
+
+                                </label>
+
+                                {{ form.reason }}
+
+                            </div>
+
+                            <div class="col-12 mb-4">
+
+                                <label class="form-label">
+
+                                    Supporting Document
+
+                                </label>
+
+                                {{ form.supporting_document }}
+
+                            </div>
+
+                        </div>
+
+                        <button class="btn btn-success">
+
+                            <i class="bi bi-send-fill"></i>
+
+                            Submit Claim
+
+                        </button>
+
+                        <a href="{% url 'patient_claims' %}"
+                           class="btn btn-secondary">
+
+                            Cancel
+
+                        </a>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "insurance/base.html" %}
+
+{% block content %}
+
+<h2>Company Profile</h2>
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<table class="table">
+
+<tr>
+<th>Company</th>
+<td>{{ company.company_name }}</td>
+</tr>
+
+<tr>
+<th>Registration</th>
+<td>{{ company.registration_number }}</td>
+</tr>
+
+<tr>
+<th>Contact Person</th>
+<td>{{ company.contact_person }}</td>
+</tr>
+
+<tr>
+<th>Email</th>
+<td>{{ company.email }}</td>
+</tr>
+
+<tr>
+<th>Phone</th>
+<td>{{ company.phone_number }}</td>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "doctor/base.html" %}
+
+{% block content %}
+
+<h2>Doctor Dashboard</h2>
+
+<p>Welcome Dr. {{ request.user.username }}</p>
+
+<ul>
+    <li>Total Patients : {{ total_patients }}</li>
+    <li>Total Records : {{ total_records }}</li>
+</ul>
+
+{% endblock %}
