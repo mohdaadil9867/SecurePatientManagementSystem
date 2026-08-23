@@ -1,0 +1,256 @@
+{% extends "hospital/base.html" %}
+
+{% block title %}
+Add Patient
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h3 class="mb-0">
+                Add New Patient
+            </h3>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+
+                <div class="alert alert-danger">
+
+                    {{ form.non_field_errors }}
+
+                </div>
+
+            {% endif %}
+
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                {% csrf_token %}
+
+
+                <!-- FIRST NAME -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        First Name
+                    </label>
+
+                    {{ form.first_name }}
+
+                    {% if form.first_name.errors %}
+                        <div class="text-danger">
+                            {{ form.first_name.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- LAST NAME -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Last Name
+                    </label>
+
+                    {{ form.last_name }}
+
+                    {% if form.last_name.errors %}
+                        <div class="text-danger">
+                            {{ form.last_name.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- GENDER -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Gender
+                    </label>
+
+                    {{ form.gender }}
+
+                    {% if form.gender.errors %}
+                        <div class="text-danger">
+                            {{ form.gender.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- DATE OF BIRTH -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Date of Birth
+                    </label>
+
+                    {{ form.date_of_birth }}
+
+                    {% if form.date_of_birth.errors %}
+                        <div class="text-danger">
+                            {{ form.date_of_birth.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- BLOOD GROUP -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Blood Group
+                    </label>
+
+                    {{ form.blood_group }}
+
+                    {% if form.blood_group.errors %}
+                        <div class="text-danger">
+                            {{ form.blood_group.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Phone Number
+                    </label>
+
+                    {{ form.phone_number }}
+
+                    {% if form.phone_number.errors %}
+                        <div class="text-danger">
+                            {{ form.phone_number.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Email
+                    </label>
+
+                    {{ form.email }}
+
+                    {% if form.email.errors %}
+                        <div class="text-danger">
+                            {{ form.email.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Address
+                    </label>
+
+                    {{ form.address }}
+
+                    {% if form.address.errors %}
+                        <div class="text-danger">
+                            {{ form.address.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- PATIENT PHOTO -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Patient Photo
+                    </label>
+
+                    {{ form.profile_photo }}
+
+                    {% if form.profile_photo.errors %}
+                        <div class="text-danger">
+                            {{ form.profile_photo.errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-text">
+                        Upload JPG, JPEG or PNG image.
+                    </div>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="form-check mb-4">
+
+                    {{ form.status }}
+
+                    <label class="form-check-label">
+                        Active Patient
+                    </label>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    Save Patient
+                </button>
+
+
+                <a
+                    href="{% url 'hospital_patients' %}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

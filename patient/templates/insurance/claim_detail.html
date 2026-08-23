@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "insurance/base.html" %}
 
 {% block title %}
 Claim Details
@@ -7,319 +7,575 @@ Claim Details
 {% block content %}
 
 <h2 class="mb-4">
-Insurance Claim Review
+    Insurance Claim Review
 </h2>
 
-<!-- Patient -->
+
+<!-- ===================================================== -->
+<!-- PATIENT INFORMATION -->
+<!-- ===================================================== -->
 
 <div class="card shadow mb-4">
 
-<div class="card-header bg-primary text-white">
+    <div class="card-header bg-primary text-white">
 
-Patient Information
+        Patient Information
+
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="row">
+
+
+            <!-- Patient Photo -->
+
+            <div class="col-md-3 text-center">
+
+                {% if patient.profile_photo %}
+
+                    <img
+                        src="{{ patient.profile_photo.url }}"
+                        alt="Patient Photo"
+                        class="img-fluid rounded-circle"
+                        style="
+                            height:180px;
+                            width:180px;
+                            object-fit:cover;
+                            border:3px solid #ddd;
+                        "
+                    >
+
+                {% else %}
+
+                    <div
+                        class="d-flex align-items-center justify-content-center"
+                        style="
+                            height:180px;
+                            width:180px;
+                            margin:auto;
+                            background:#eeeeee;
+                            border-radius:50%;
+                            color:#777;
+                        "
+                    >
+
+                        No Photo
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Patient Details -->
+
+            <div class="col-md-9">
+
+                <p>
+                    <strong>Patient ID :</strong>
+
+                    {{ patient.patient_id }}
+
+                </p>
+
+
+                <p>
+
+                    <strong>Name :</strong>
+
+                    {{ patient.first_name }}
+                    {{ patient.last_name }}
+
+                </p>
+
+
+                <p>
+
+                    <strong>Gender :</strong>
+
+                    {{ patient.gender }}
+
+                </p>
+
+
+                <p>
+
+                    <strong>Blood Group :</strong>
+
+                    {{ patient.blood_group }}
+
+                </p>
+
+
+                <p>
+
+                    <strong>Date of Birth :</strong>
+
+                    {{ patient.date_of_birth }}
+
+                </p>
+
+
+                <p>
+
+                    <strong>Phone :</strong>
+
+                    {{ patient.phone_number }}
+
+                </p>
+
+
+                <p>
+
+                    <strong>Email :</strong>
+
+                    {{ patient.email }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
-<div class="card-body">
 
-<div class="row">
 
-<div class="col-md-3 text-center">
-
-{% if patient.photo %}
-
-<img
-src="{{ patient.photo.url }}"
-class="img-fluid rounded-circle"
-style="height:180px;width:180px;object-fit:cover;">
-
-{% endif %}
-
-</div>
-
-<div class="col-md-9">
-
-<p><strong>Patient ID :</strong> {{ patient.patient_id }}</p>
-
-<p><strong>Name :</strong>
-
-{{ patient.first_name }}
-
-{{ patient.last_name }}
-
-</p>
-
-<p><strong>Gender :</strong>
-
-{{ patient.gender }}
-
-</p>
-
-<p><strong>Blood Group :</strong>
-
-{{ patient.blood_group }}
-
-</p>
-
-<p><strong>Phone :</strong>
-
-{{ patient.phone_number }}
-
-</p>
-
-<p><strong>Email :</strong>
-
-{{ patient.email }}
-
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- Medical -->
+<!-- ===================================================== -->
+<!-- MEDICAL RECORD -->
+<!-- ===================================================== -->
 
 <div class="card shadow mb-4">
 
-<div class="card-header bg-success text-white">
+    <div class="card-header bg-success text-white">
 
-Medical Record
+        Medical Record
+
+    </div>
+
+
+    <div class="card-body">
+
+        {% if medical_record %}
+
+            <p>
+
+                <strong>Doctor :</strong>
+
+                {{ medical_record.doctor_name }}
+
+            </p>
+
+
+            <p>
+
+                <strong>Department :</strong>
+
+                {{ medical_record.department }}
+
+            </p>
+
+
+            <p>
+
+                <strong>Diagnosis :</strong>
+
+                {{ medical_record.diagnosis }}
+
+            </p>
+
+
+            <p>
+
+                <strong>Symptoms :</strong>
+
+                {{ medical_record.symptoms }}
+
+            </p>
+
+
+            <p>
+
+                <strong>Treatment :</strong>
+
+                {{ medical_record.treatment }}
+
+            </p>
+
+
+            <p>
+
+                <strong>Prescription :</strong>
+
+                {{ medical_record.prescription }}
+
+            </p>
+
+
+            {% if medical_record.medical_report %}
+
+                <a
+                    href="{{ medical_record.medical_report.url }}"
+                    target="_blank"
+                    class="btn btn-outline-primary"
+                >
+
+                    <i class="bi bi-file-earmark-medical"></i>
+
+                    View Medical Report
+
+                </a>
+
+            {% endif %}
+
+        {% else %}
+
+            <p class="text-muted">
+
+                No medical record available.
+
+            </p>
+
+        {% endif %}
+
+    </div>
 
 </div>
 
-<div class="card-body">
 
-<p>
 
-<strong>Doctor :</strong>
-
-{{ medical_record.doctor_name }}
-
-</p>
-
-<p>
-
-<strong>Department :</strong>
-
-{{ medical_record.department }}
-
-</p>
-
-<p>
-
-<strong>Diagnosis :</strong>
-
-{{ medical_record.diagnosis }}
-
-</p>
-
-<p>
-
-<strong>Treatment :</strong>
-
-{{ medical_record.treatment }}
-
-</p>
-
-<p>
-
-<strong>Prescription :</strong>
-
-{{ medical_record.prescription }}
-
-</p>
-
-{% if medical_record.medical_report %}
-
-<a
-
-href="{{ medical_record.medical_report.url }}"
-
-target="_blank"
-
-class="btn btn-outline-primary">
-
-View Report
-
-</a>
-
-{% endif %}
-
-</div>
-
-</div>
-
-<!-- Billing -->
+<!-- ===================================================== -->
+<!-- BILLING DETAILS -->
+<!-- ===================================================== -->
 
 <div class="card shadow mb-4">
 
-<div class="card-header bg-warning">
+    <div class="card-header bg-warning">
 
-Billing Details
+        Billing Details
 
-</div>
+    </div>
 
-<div class="card-body">
 
-<table class="table">
+    <div class="card-body">
 
-<tr>
+        {% if bill %}
 
-<th>Bill Number</th>
+            <table class="table">
 
-<td>{{ bill.bill_number }}</td>
+                <tr>
 
-</tr>
+                    <th>
+                        Bill Number
+                    </th>
 
-<tr>
+                    <td>
+                        {{ bill.bill_number }}
+                    </td>
 
-<th>Total Amount</th>
+                </tr>
 
-<td>₹ {{ bill.total_amount }}</td>
 
-</tr>
+                <tr>
 
-<tr>
+                    <th>
+                        Total Amount
+                    </th>
 
-<th>Bill Date</th>
+                    <td>
+                        ₹ {{ bill.total_amount }}
+                    </td>
 
-<td>{{ bill.bill_date }}</td>
+                </tr>
 
-</tr>
 
-<tr>
+                <tr>
 
-<th>Status</th>
+                    <th>
+                        Bill Date
+                    </th>
 
-<td>{{ bill.payment_status }}</td>
+                    <td>
+                        {{ bill.bill_date }}
+                    </td>
 
-</tr>
+                </tr>
 
-</table>
 
-<a
+                <tr>
 
-href="{% url 'download_bill' bill.id %}"
+                    <th>
+                        Payment Status
+                    </th>
 
-class="btn btn-danger">
+                    <td>
+                        {{ bill.payment_status }}
+                    </td>
 
-Download Bill PDF
+                </tr>
 
-</a>
+            </table>
 
-</div>
 
-</div>
+            <a
+                href="{% url 'download_bill' bill.pk %}"
+                class="btn btn-primary"
+            >
 
-<!-- Claim -->
+                <i class="bi bi-file-pdf"></i>
 
-<div class="card shadow">
+                Download Bill
 
-<div class="card-header bg-dark text-white">
+            </a>
 
-Review Claim
+        {% else %}
 
-</div>
+            <p class="text-muted">
 
-<div class="card-body">
+                No bill available.
 
-<form method="POST">
+            </p>
 
-{% csrf_token %}
+        {% endif %}
 
-<div class="mb-3">
-
-<label>Status</label>
-
-<select
-
-name="status"
-
-class="form-select">
-
-<option value="Pending">
-
-Pending
-
-</option>
-
-<option value="Under Review">
-
-Under Review
-
-</option>
-
-<option value="Approved">
-
-Approved
-
-</option>
-
-<option value="Rejected">
-
-Rejected
-
-</option>
-
-</select>
+    </div>
 
 </div>
 
-<div class="mb-3">
 
-<label>
 
-Approved Amount
+<!-- ===================================================== -->
+<!-- CLAIM REVIEW -->
+<!-- ===================================================== -->
 
-</label>
+<div class="card shadow mb-4">
 
-<input
+    <div class="card-header bg-dark text-white">
 
-type="number"
+        Review Claim
 
-step="0.01"
+    </div>
 
-name="approved_amount"
 
-value="{{ claim.approved_amount }}"
+    <div class="card-body">
 
-class="form-control">
 
-</div>
+        <!-- IMPORTANT: POST FORM -->
 
-<div class="mb-3">
+        <form method="POST">
 
-<label>
+            {% csrf_token %}
 
-Remarks
 
-</label>
+            <!-- Claim ID -->
 
-<textarea
+            <div class="mb-3">
 
-name="remarks"
+                <label class="form-label fw-semibold">
 
-rows="5"
+                    Claim ID
 
-class="form-control">{{ claim.remarks }}</textarea>
+                </label>
 
-</div>
+                <input
+                    type="text"
+                    class="form-control"
+                    value="{{ claim.claim_id }}"
+                    readonly
+                >
 
-<button
+            </div>
 
-class="btn btn-success">
 
-Save Decision
 
-</button>
+            <!-- Claim Amount -->
 
-</form>
+            <div class="mb-3">
 
-</div>
+                <label class="form-label fw-semibold">
+
+                    Claim Amount
+
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    value="₹ {{ claim.claim_amount }}"
+                    readonly
+                >
+
+            </div>
+
+
+
+            <!-- STATUS -->
+
+            <div class="mb-3">
+
+                <label
+                    for="claim_status"
+                    class="form-label fw-semibold"
+                >
+
+                    Claim Status
+
+                </label>
+
+
+                <!-- IMPORTANT:
+                     Your Django view expects claim_status,
+                     NOT status.
+                -->
+
+                <select
+                    name="claim_status"
+                    id="claim_status"
+                    class="form-select"
+                    required
+                >
+
+                    <option
+                        value="Pending"
+                        {% if claim.claim_status == "Pending" %}
+                            selected
+                        {% endif %}
+                    >
+                        Pending
+                    </option>
+
+
+                    <option
+                        value="Under Review"
+                        {% if claim.claim_status == "Under Review" %}
+                            selected
+                        {% endif %}
+                    >
+                        Under Review
+                    </option>
+
+
+                    <option
+                        value="Approved"
+                        {% if claim.claim_status == "Approved" %}
+                            selected
+                        {% endif %}
+                    >
+                        Approved
+                    </option>
+
+
+                    <option
+                        value="Rejected"
+                        {% if claim.claim_status == "Rejected" %}
+                            selected
+                        {% endif %}
+                    >
+                        Rejected
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- APPROVED AMOUNT -->
+
+            <div class="mb-3">
+
+                <label
+                    for="approved_amount"
+                    class="form-label fw-semibold"
+                >
+
+                    Approved Amount
+
+                </label>
+
+
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="approved_amount"
+                    id="approved_amount"
+                    value="{{ claim.approved_amount|default:'0' }}"
+                    class="form-control"
+                >
+
+                <small class="text-muted">
+
+                    Approved amount cannot be greater than
+                    ₹ {{ claim.claim_amount }}.
+
+                </small>
+
+            </div>
+
+
+
+            <!-- REMARKS -->
+
+            <div class="mb-3">
+
+                <label
+                    for="remarks"
+                    class="form-label fw-semibold"
+                >
+
+                    Remarks
+
+                </label>
+
+
+                <textarea
+                    name="remarks"
+                    id="remarks"
+                    rows="5"
+                    class="form-control"
+                    placeholder="Enter remarks about this claim..."
+                >{{ claim.remarks|default:'' }}</textarea>
+
+            </div>
+
+
+
+            <!-- SAVE BUTTON -->
+
+            <button
+                type="submit"
+                class="btn btn-success"
+            >
+
+                <i class="bi bi-check-circle"></i>
+
+                Save Decision
+
+            </button>
+
+
+            <!-- BACK BUTTON -->
+
+            <a
+                href="{% url 'insurance_claim_list' %}"
+                class="btn btn-secondary ms-2"
+            >
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Claims
+
+            </a>
+
+        </form>
+
+    </div>
 
 </div>
 

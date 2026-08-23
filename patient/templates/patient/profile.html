@@ -1,176 +1,257 @@
-{% extends "base.html" %}
+{% extends "patient/base.html" %}
 
 {% block title %}
 My Profile
 {% endblock %}
 
+{% block page_title %}
+Patient Profile
+{% endblock %}
+
 {% block content %}
 
-<div class="container-fluid">
+<div class="row g-4">
 
-    <div class="row">
+    <!-- ================= PROFILE PHOTO ================= -->
 
-        <!-- Profile Card -->
+    <div class="col-lg-4">
 
-        <div class="col-lg-4">
+        <div class="card border-0 shadow-sm text-center">
 
-            <div class="card shadow border-0">
+            <div class="card-body p-4">
 
-               <div class="text-center mb-4">
+                {% if patient.profile_photo %}
 
-    {% if patient.photo %}
+                    <img
+                        src="{{ patient.profile_photo.url }}"
+                        alt="Patient Photo"
+                        class="patient-photo"
+                    >
 
-    <a href="{{ patient.photo.url }}" target="_blank">
+                {% else %}
 
-        <img
-            src="{{ patient.photo.url }}"
-            class="rounded-circle shadow"
-            width="180"
-            height="180"
-            style="object-fit:cover; cursor:pointer;"
-            alt="Patient Photo"
-        >
+                    <div class="profile-placeholder">
 
-    </a>
+                        <i class="bi bi-person-fill"></i>
 
-    {% else %}
+                    </div>
 
-    <img
-        src="https://via.placeholder.com/180"
-        class="rounded-circle shadow"
-        alt="No Image"
-    >
+                    <p class="text-muted mt-3 mb-0">
+                        Profile photo not uploaded
+                    </p>
 
-    {% endif %}
+                {% endif %}
 
-</div>
+
+                <h4 class="fw-bold mt-4 mb-1">
+
+                    {{ patient.first_name }}
+                    {{ patient.last_name }}
+
+                </h4>
+
+
+                <p class="text-muted mb-3">
+
+                    Patient ID:
+                    <strong>
+                        {{ patient.patient_id }}
+                    </strong>
+
+                </p>
+
+
+                {% if patient.status %}
+
+                    <span class="badge bg-success px-3 py-2">
+
+                        <i class="bi bi-check-circle"></i>
+                        Active
+
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-danger px-3 py-2">
+
+                        <i class="bi bi-x-circle"></i>
+                        Inactive
+
+                    </span>
+
+                {% endif %}
 
             </div>
 
         </div>
 
-        <!-- Information -->
+    </div>
 
-        <div class="col-lg-8">
 
-            <div class="card shadow border-0">
+    <!-- ================= PERSONAL INFORMATION ================= -->
 
-                <div class="card-header bg-primary text-white">
+    <div class="col-lg-8">
 
-                    <h5 class="mb-0">
+        <div class="card border-0 shadow-sm">
 
-                        Personal Information
+            <div class="card-header bg-primary text-white">
 
-                    </h5>
+                <h5 class="mb-0">
 
-                </div>
+                    <i class="bi bi-person-vcard"></i>
 
-                <div class="card-body">
+                    Personal Information
 
-                    <div class="row">
+                </h5>
 
-                        <div class="col-md-6 mb-3">
+            </div>
 
-                            <strong>Patient ID</strong>
 
-                            <br>
+            <div class="card-body p-4">
 
-                            {{ patient.patient_id }}
+                <div class="row g-4">
 
-                        </div>
 
-                        <div class="col-md-6 mb-3">
+                    <div class="col-md-6">
 
-                            <strong>Full Name</strong>
+                        <div class="profile-field">
 
-                            <br>
+                            <label>
+                                Patient ID
+                            </label>
 
-                            {{ patient.first_name }}
-                            {{ patient.last_name }}
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <strong>Email</strong>
-
-                            <br>
-
-                            {{ patient.email }}
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <strong>Phone Number</strong>
-
-                            <br>
-
-                            {{ patient.phone_number }}
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <strong>Gender</strong>
-
-                            <br>
-
-                            {{ patient.gender }}
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <strong>Date of Birth</strong>
-
-                            <br>
-
-                            {{ patient.date_of_birth }}
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <strong>Age</strong>
-
-                            <br>
-
-                            {{ patient.age }} Years
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <strong>Blood Group</strong>
-
-                            <br>
-
-                            {{ patient.blood_group }}
-
-                        </div>
-
-                        <div class="col-md-12 mb-3">
-
-                            <strong>Address</strong>
-
-                            <br>
-
-                            {{ patient.address }}
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <strong>Emergency Contact</strong>
-
-                            <br>
-
-                            {{ patient.emergency_contact_number }}
+                            <p>
+                                {{ patient.patient_id }}
+                            </p>
 
                         </div>
 
                     </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="profile-field">
+
+                            <label>
+                                Full Name
+                            </label>
+
+                            <p>
+
+                                {{ patient.first_name }}
+                                {{ patient.last_name }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="profile-field">
+
+                            <label>
+                                Email
+                            </label>
+
+                            <p>
+                                {{ patient.email }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="profile-field">
+
+                            <label>
+                                Phone Number
+                            </label>
+
+                            <p>
+                                {{ patient.phone_number }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="profile-field">
+
+                            <label>
+                                Gender
+                            </label>
+
+                            <p>
+                                {{ patient.gender }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="profile-field">
+
+                            <label>
+                                Date of Birth
+                            </label>
+
+                            <p>
+
+                                {{ patient.date_of_birth|date:"d M Y" }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="profile-field">
+
+                            <label>
+                                Blood Group
+                            </label>
+
+                            <p>
+                                {{ patient.blood_group }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="profile-field">
+
+                            <label>
+                                Address
+                            </label>
+
+                            <p>
+                                {{ patient.address }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
 
                 </div>
 
@@ -181,5 +262,87 @@ My Profile
     </div>
 
 </div>
+
+
+<style>
+
+.patient-photo {
+
+    width: 180px;
+
+    height: 180px;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+    border: 5px solid #0d6efd;
+
+    padding: 4px;
+
+    background: white;
+
+}
+
+
+.profile-placeholder {
+
+    width: 180px;
+
+    height: 180px;
+
+    margin: auto;
+
+    border-radius: 50%;
+
+    background: #eef4ff;
+
+    border: 5px solid #0d6efd;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.profile-placeholder i {
+
+    font-size: 80px;
+
+    color: #0d6efd;
+
+}
+
+
+.profile-field label {
+
+    display: block;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #0d6efd;
+
+    margin-bottom: 4px;
+
+}
+
+
+.profile-field p {
+
+    margin: 0;
+
+    font-size: 16px;
+
+    color: #343a40;
+
+}
+
+
+</style>
 
 {% endblock %}

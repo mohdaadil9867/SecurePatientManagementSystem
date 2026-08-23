@@ -9,35 +9,49 @@ from .models import (
 )
 readonly_fields = (
 )
+class MedicalRecordInline(admin.TabularInline):
+    model = MedicalRecord
+    extra = 1
+    fields = (
+        "doctor",
+        "doctor_name",
+        "department",
+        "diagnosis",
+        "treatment",
+        "prescription",
+        "visit_date",
+        "next_visit",
+        "status",
+    )
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
 
-    readonly_fields = ('patient_id',)
-  
+    readonly_fields = ("patient_id",)
 
     list_display = (
-        'patient_id',
-        'first_name',
-        'last_name',
-        'gender',
-        'blood_group',
-        'phone_number',
-        'status',
-        'photo_preview',
+        "patient_id",
+        "first_name",
+        "last_name",
+        "gender",
+        "blood_group",
+        "phone_number",
+        "user",
+        "status",
+        "photo_preview",
     )
 
     search_fields = (
-        'patient_id',
-        'first_name',
-        'last_name',
-        'phone_number',
-        'email',
+        "patient_id",
+        "first_name",
+        "last_name",
+        "phone_number",
+        "email",
     )
 
     list_filter = (
-        'gender',
-        'blood_group',
-        'status',
+        "gender",
+        "blood_group",
+        "status",
     )
 
     def photo_preview(self, obj):
@@ -53,36 +67,6 @@ class PatientAdmin(admin.ModelAdmin):
         return "No Photo"
 
     photo_preview.short_description = "Photo"
-
-@admin.register(MedicalRecord)
-class MedicalRecordAdmin(admin.ModelAdmin):
-
-    list_display = (
-        'patient',
-        'doctor_name',
-        'department',
-        'diagnosis',
-        'visit_date',
-        'next_visit',
-    )
-
-    search_fields = (
-        'patient__patient_id',
-        'patient__first_name',
-        'patient__last_name',
-        'doctor_name',
-        'department',
-    )
-
-    list_filter = (
-        'department',
-        'visit_date',
-    )
-
-    autocomplete_fields = (
-        'patient',
-    )
-
 @admin.register(Billing)
 class BillingAdmin(admin.ModelAdmin):
 
@@ -109,10 +93,6 @@ class BillingAdmin(admin.ModelAdmin):
     list_filter = (
         'payment_status',
         'payment_method',
-    )
-
-    autocomplete_fields = (
-        'medical_record',
     )
 @admin.register(InsuranceClaim)
 class InsuranceClaimAdmin(admin.ModelAdmin):

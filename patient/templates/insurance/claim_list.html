@@ -4,253 +4,397 @@
 Insurance Claims
 {% endblock %}
 
-{% block page_title %}
-Insurance Claims
-{% endblock %}
-
 {% block content %}
 
-<div class="card shadow">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-<div class="card-body">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Insurance Claims
+        </h2>
 
-<form method="get">
-
-<div class="row">
-
-<div class="col-md-5">
-
-<input
-type="text"
-name="search"
-value="{{ search }}"
-class="form-control"
-placeholder="Search Claim ID / Patient">
-
-</div>
-
-<div class="col-md-3">
-
-<select
-name="status"
-class="form-select">
-
-<option value="">All Status</option>
-
-<option value="Pending"
-{% if status == "Pending" %}selected{% endif %}>
-Pending
-</option>
-
-<option value="Under Review"
-{% if status == "Under Review" %}selected{% endif %}>
-Under Review
-</option>
-
-<option value="Approved"
-{% if status == "Approved" %}selected{% endif %}>
-Approved
-</option>
-
-<option value="Rejected"
-{% if status == "Rejected" %}selected{% endif %}>
-Rejected
-</option>
-
-</select>
-
-</div>
-
-<div class="col-md-2">
-
-<button class="btn btn-primary w-100">
-
-Search
-
-</button>
-
-</div>
-
-<div class="col-md-2">
-
-<a
-href="{% url 'insurance_claim_list' %}"
-class="btn btn-secondary w-100">
-
-Reset
-
-</a>
-
-</div>
-
-</div>
-
-</form>
-
-</div>
+        <p class="text-muted mb-0">
+            Search and review patient insurance claims
+        </p>
+    </div>
 
 </div>
 
 
-<div class="card shadow mt-4">
+<!-- Search / Filter -->
 
-<div class="card-header bg-primary text-white">
+<div class="card shadow-sm border-0 mb-4">
 
-Insurance Claims
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row g-3">
+
+                <!-- Search -->
+
+                <div class="col-md-5">
+
+                    <label class="form-label fw-semibold">
+                        Search
+                    </label>
+
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search|default:'' }}"
+                        class="form-control"
+                        placeholder="Search Claim ID or Patient"
+                    >
+
+                </div>
+
+
+                <!-- Status -->
+
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        <option
+                            value="Pending"
+                            {% if status == "Pending" %}selected{% endif %}
+                        >
+                            Pending
+                        </option>
+
+                        <option
+                            value="Under Review"
+                            {% if status == "Under Review" %}selected{% endif %}
+                        >
+                            Under Review
+                        </option>
+
+                        <option
+                            value="Approved"
+                            {% if status == "Approved" %}selected{% endif %}
+                        >
+                            Approved
+                        </option>
+
+                        <option
+                            value="Rejected"
+                            {% if status == "Rejected" %}selected{% endif %}
+                        >
+                            Rejected
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Search Button -->
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                    >
+
+                        <i class="bi bi-search"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+
+                <!-- Reset -->
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <a
+                        href="{% url 'insurance_claim_list' %}"
+                        class="btn btn-secondary w-100"
+                    >
+
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
 
-<div class="card-body">
 
-<table class="table table-hover align-middle">
+<!-- Claims Table -->
 
-<thead>
+<div class="card shadow-sm border-0">
 
-<tr>
+    <div class="card-header bg-primary text-white">
 
-<th>Claim ID</th>
+        <h5 class="mb-0">
 
-<th>Patient</th>
+            <i class="bi bi-file-earmark-medical"></i>
 
-<th>Bill No.</th>
+            All Insurance Claims
 
-<th>Amount</th>
+        </h5>
 
-<th>Status</th>
+    </div>
 
-<th>Date</th>
 
-<th width="180">Actions</th>
+    <div class="card-body p-0">
 
-</tr>
+        <div class="table-responsive">
 
-</thead>
+            <table class="table table-hover align-middle mb-0">
 
-<tbody>
+                <thead class="table-light">
 
-{% for claim in claims %}
+                    <tr>
 
-<tr>
+                        <th>Claim ID</th>
 
-<td>
+                        <th>Patient</th>
 
-{{ claim.claim_id }}
+                        <th>Bill Number</th>
 
-</td>
+                        <th>Claim Amount</th>
 
-<td>
+                        <th>Approved Amount</th>
 
-{{ claim.patient.patient_id }}
+                        <th>Status</th>
 
-<br>
+                        <th>Applied Date</th>
 
-<small>
+                        <th>Action</th>
 
-{{ claim.patient.first_name }}
+                    </tr>
 
-{{ claim.patient.last_name }}
+                </thead>
 
-</small>
 
-</td>
+                <tbody>
 
-<td>
+                    {% for claim in claims %}
 
-{{ claim.bill.bill_number }}
+                    <tr>
 
-</td>
+                        <!-- Claim ID -->
 
-<td>
+                        <td>
 
-₹ {{ claim.claim_amount }}
+                            <strong>
+                                {{ claim.claim_id|default:"Pending ID" }}
+                            </strong>
 
-</td>
+                        </td>
 
-<td>
 
-{% if claim.claim_status == "Pending" %}
+                        <!-- Patient -->
 
-<span class="badge bg-warning">
+                        <td>
 
-Pending
+                            <strong>
+                                {{ claim.patient.patient_id }}
+                            </strong>
 
-</span>
+                            <br>
 
-{% elif claim.claim_status == "Approved" %}
+                            <small class="text-muted">
 
-<span class="badge bg-success">
+                                {{ claim.patient.first_name }}
+                                {{ claim.patient.last_name }}
 
-Approved
+                            </small>
 
-</span>
+                        </td>
 
-{% elif claim.claim_status == "Rejected" %}
 
-<span class="badge bg-danger">
+                        <!-- Bill -->
 
-Rejected
+                        <td>
 
-</span>
+                            {% if claim.bill %}
 
-{% else %}
+                                {{ claim.bill.bill_number }}
 
-<span class="badge bg-info">
+                            {% else %}
 
-Under Review
+                                <span class="text-muted">
+                                    Not Available
+                                </span>
 
-</span>
+                            {% endif %}
 
-{% endif %}
+                        </td>
 
-</td>
 
-<td>
+                        <!-- Claim Amount -->
 
-{{ claim.applied_date }}
+                        <td>
 
-</td>
+                            ₹ {{ claim.claim_amount }}
 
-<td>
+                        </td>
 
-<a
-href="{% url 'insurance_claim_detail' claim.id %}"
-class="btn btn-primary btn-sm">
 
-View
+                        <!-- Approved Amount -->
 
-</a>
+                        <td>
 
-<a
-href="{% url 'download_bill' claim.bill.id %}"
-class="btn btn-success btn-sm">
+                            ₹ {{ claim.approved_amount }}
 
-PDF
+                        </td>
 
-</a>
 
-</td>
+                        <!-- Status -->
 
-</tr>
+                        <td>
 
-{% empty %}
+                            {% if claim.claim_status == "Pending" %}
 
-<tr>
+                                <span class="badge bg-warning text-dark">
 
-<td colspan="7" class="text-center">
+                                    <i class="bi bi-clock"></i>
+                                    Pending
 
-No Claims Found
+                                </span>
 
-</td>
+                            {% elif claim.claim_status == "Under Review" %}
 
-</tr>
+                                <span class="badge bg-info">
 
-{% endfor %}
+                                    <i class="bi bi-search"></i>
+                                    Under Review
 
-</tbody>
+                                </span>
 
-</table>
+                            {% elif claim.claim_status == "Approved" %}
 
-</div>
+                                <span class="badge bg-success">
+
+                                    <i class="bi bi-check-circle"></i>
+                                    Approved
+
+                                </span>
+
+                            {% elif claim.claim_status == "Rejected" %}
+
+                                <span class="badge bg-danger">
+
+                                    <i class="bi bi-x-circle"></i>
+                                    Rejected
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-secondary">
+
+                                    {{ claim.claim_status }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Applied Date -->
+
+                        <td>
+
+                            {{ claim.applied_date|date:"d M Y" }}
+
+                        </td>
+
+
+                        <!-- Actions -->
+
+                        <td>
+
+                            <!-- IMPORTANT: claim detail URL -->
+
+                            <a
+                                href="{% url 'insurance_claim_detail' claim.pk %}"
+                                class="btn btn-primary btn-sm"
+                            >
+
+                                <i class="bi bi-eye"></i>
+                                View
+
+                            </a>
+
+
+                            {% if claim.bill %}
+
+                            <a
+                                href="{% url 'download_bill' claim.bill.pk %}"
+                                class="btn btn-success btn-sm"
+                            >
+
+                                <i class="bi bi-file-pdf"></i>
+                                PDF
+
+                            </a>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="text-center py-5"
+                        >
+
+                            <i
+                                class="bi bi-folder-x fs-1 text-muted"
+                            >
+                            </i>
+
+                            <p class="mt-3 mb-0 text-muted">
+
+                                No insurance claims found.
+
+                            </p>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
 
 </div>
 

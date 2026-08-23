@@ -1,0 +1,232 @@
+{% extends "hospital/base.html" %}
+
+{% block title %}
+Hospital Patients
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+
+    <!-- HEADER -->
+
+    <div class="
+        d-flex
+        justify-content-between
+        align-items-center
+        mb-4
+    ">
+
+        <h2>
+            Patients
+        </h2>
+
+
+        <a
+            href="{% url 'hospital_add_patient' %}"
+            class="btn btn-primary"
+        >
+            + Add Patient
+        </a>
+
+    </div>
+
+
+    <!-- PATIENT TABLE -->
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="
+                    table
+                    table-bordered
+                    table-hover
+                    align-middle
+                ">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>
+                                Patient ID
+                            </th>
+
+                            <th>
+                                Photo
+                            </th>
+
+                            <th>
+                                Name
+                            </th>
+
+                            <th>
+                                Gender
+                            </th>
+
+                            <th>
+                                Blood Group
+                            </th>
+
+                            <th>
+                                Phone
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for patient in patients %}
+
+                        <tr>
+
+
+                            <!-- PATIENT ID -->
+
+                            <td>
+                                {{ patient.patient_id }}
+                            </td>
+
+
+                            <!-- PHOTO -->
+
+                            <td class="text-center">
+
+                                {% if patient.profile_photo %}
+
+                                    <img
+                                        src="{{ patient.profile_photo.url }}"
+                                        alt="Patient Photo"
+                                        width="60"
+                                        height="60"
+                                        style="
+                                            object-fit:cover;
+                                            border-radius:50%;
+                                            border:2px solid #ddd;
+                                        "
+                                    >
+
+                                {% else %}
+
+                                    <div
+                                        style="
+                                            width:60px;
+                                            height:60px;
+                                            border-radius:50%;
+                                            background:#eee;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;
+                                            margin:auto;
+                                            font-size:11px;
+                                            color:#777;
+                                        "
+                                    >
+                                        No Photo
+                                    </div>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- NAME -->
+
+                            <td>
+
+                                {{ patient.first_name }}
+
+                                {{ patient.last_name }}
+
+                            </td>
+
+
+                            <!-- GENDER -->
+
+                            <td>
+                                {{ patient.gender }}
+                            </td>
+
+
+                            <!-- BLOOD GROUP -->
+
+                            <td>
+                                {{ patient.blood_group }}
+                            </td>
+
+
+                            <!-- PHONE -->
+
+                            <td>
+                                {{ patient.phone_number }}
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                {% if patient.status %}
+
+                                    <span class="
+                                        badge
+                                        bg-success
+                                    ">
+                                        Active
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="
+                                        badge
+                                        bg-danger
+                                    ">
+                                        Inactive
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="text-center"
+                            >
+                                No patients found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

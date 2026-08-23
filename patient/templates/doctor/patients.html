@@ -1,0 +1,272 @@
+{% extends "doctor/base.html" %}
+
+{% block content %}
+
+<div style="padding:30px;">
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:20px;
+    ">
+
+        <div>
+            <h2>My Patients</h2>
+
+            <p>
+                View patients and manage their medical records.
+            </p>
+        </div>
+
+        <!-- ADD PATIENT BUTTON -->
+        <a
+            href="{% url 'doctor_add_patient' %}"
+            style="
+                padding:10px 18px;
+                background:#28a745;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+            "
+        >
+            + Add Patient
+        </a>
+
+    </div>
+
+
+    <!-- SEARCH -->
+
+    <form
+        method="GET"
+        style="margin-bottom:20px;"
+    >
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search|default:'' }}"
+            placeholder="Search Patient ID or Name"
+            style="
+                padding:10px;
+                width:300px;
+                border:1px solid #ccc;
+                border-radius:4px;
+            "
+        >
+
+        <button
+            type="submit"
+            style="
+                padding:10px 20px;
+                background:#007bff;
+                color:white;
+                border:none;
+                border-radius:4px;
+                cursor:pointer;
+            "
+        >
+            Search
+        </button>
+
+    </form>
+
+
+    {% if patients %}
+
+    <table
+        border="1"
+        cellpadding="10"
+        cellspacing="0"
+        width="100%"
+        style="
+            border-collapse:collapse;
+            background:white;
+        "
+    >
+
+        <thead>
+
+            <tr>
+
+                <th>Patient ID</th>
+
+                <th>Patient Photo</th>
+
+                <th>Patient Name</th>
+
+                <th>Gender</th>
+
+                <th>Blood Group</th>
+
+                <th>Phone</th>
+
+                <th>Medical Record</th>
+
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+        {% for patient in patients %}
+
+            <tr>
+
+                <!-- PATIENT ID -->
+
+                <td>
+                    {{ patient.patient_id }}
+                </td>
+
+
+                <!-- PATIENT PHOTO -->
+
+                <td style="text-align:center;">
+
+                    {% if patient.profile_photo %}
+
+                        <img
+                            src="{{ patient.profile_photo.url }}"
+                            alt="Patient Photo"
+                            width="60"
+                            height="60"
+                            style="
+                                object-fit:cover;
+                                border-radius:50%;
+                                border:2px solid #ddd;
+                            "
+                        >
+
+                    {% else %}
+
+                        <div style="
+                            width:60px;
+                            height:60px;
+                            border-radius:50%;
+                            background:#eee;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            margin:auto;
+                            font-size:11px;
+                            color:#777;
+                        ">
+                            No Photo
+                        </div>
+
+                    {% endif %}
+
+                </td>
+
+
+                <!-- NAME -->
+
+                <td>
+                    {{ patient.first_name }}
+                    {{ patient.last_name }}
+                </td>
+
+
+                <!-- GENDER -->
+
+                <td>
+                    {{ patient.gender }}
+                </td>
+
+
+                <!-- BLOOD GROUP -->
+
+                <td>
+                    {{ patient.blood_group }}
+                </td>
+
+
+                <!-- PHONE -->
+
+                <td>
+                    {{ patient.phone_number }}
+                </td>
+
+
+                <!-- MEDICAL RECORD -->
+
+                <td>
+
+                    {% if patient.has_medical_record %}
+
+                        <span style="
+                            color:green;
+                            font-weight:bold;
+                        ">
+                            Record Available
+                        </span>
+
+                    {% else %}
+
+                        <span style="
+                            color:red;
+                            font-weight:bold;
+                        ">
+                            No Record
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+
+                <!-- ACTION -->
+
+                <td>
+
+                    <a
+                        href="{% url 'doctor_patient_detail' patient.id %}"
+                        style="
+                            padding:8px 12px;
+                            background:#007bff;
+                            color:white;
+                            text-decoration:none;
+                            border-radius:4px;
+                        "
+                    >
+                        View
+                    </a>
+
+                </td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+
+    {% else %}
+
+        <div style="
+            padding:20px;
+            background:#f5f5f5;
+            border:1px solid #ddd;
+            border-radius:5px;
+        ">
+
+            <h3>No patients found.</h3>
+
+            <p>
+                No patients are currently available.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

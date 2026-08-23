@@ -1,79 +1,123 @@
-{% extends "base.html" %}
+{% extends "billing/base.html" %}
 
 {% block title %}
-Billing Login
+Billing Staff Login
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-5">
+<div class="billing-login-page">
 
-<div class="row justify-content-center">
+    <div class="login-card">
 
-<div class="col-md-5">
+        <!-- Header -->
+        <div class="login-header">
 
-<div class="card shadow">
+            <div class="login-icon">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
 
-<div class="card-header bg-success text-white">
+            <h2>
+                Billing Staff Login
+            </h2>
 
-<h4>Billing Staff Login</h4>
+            <p>
+                Sign in to manage billing records
+            </p>
 
-</div>
+        </div>
 
-<div class="card-body">
 
-<form method="POST">
+        <!-- Login Form -->
+        <form method="POST">
 
-{% csrf_token %}
+            {% csrf_token %}
 
-<div class="mb-3">
+            {% if error %}
 
-<label>Username</label>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    {{ error }}
+                </div>
 
-<input
-type="text"
-name="username"
-class="form-control">
+            {% endif %}
 
-</div>
 
-<div class="mb-3">
+            <!-- Username -->
+            <div class="mb-3">
 
-<label>Password</label>
+                <label class="form-label">
+                    Username
+                </label>
 
-<input
-type="password"
-name="password"
-class="form-control">
+                <div class="input-group">
 
-</div>
+                    <span class="input-group-text">
+                        <i class="bi bi-person"></i>
+                    </span>
 
-<button
-class="btn btn-success w-100">
+                    <input
+                        type="text"
+                        name="username"
+                        class="form-control"
+                        placeholder="Enter username"
+                        required
+                    >
 
-Login
+                </div>
 
-</button>
+            </div>
 
-</form>
 
-{% if error %}
+            <!-- Password -->
+            <div class="mb-4">
 
-<div class="alert alert-danger mt-3">
+                <label class="form-label">
+                    Password
+                </label>
 
-{{ error }}
+                <div class="input-group">
 
-</div>
+                    <span class="input-group-text">
+                        <i class="bi bi-lock"></i>
+                    </span>
 
-{% endif %}
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="Enter password"
+                        required
+                    >
 
-</div>
+                </div>
 
-</div>
+            </div>
 
-</div>
 
-</div>
+            <!-- Login Button -->
+            <button
+                type="submit"
+                class="btn btn-success w-100 login-btn"
+            >
+
+                <i class="bi bi-box-arrow-in-right"></i>
+
+                Login
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- Footer -->
+    <div class="login-footer">
+
+        © 2026 Secure Patient Data & Insurance Management System
+
+    </div>
 
 </div>
 

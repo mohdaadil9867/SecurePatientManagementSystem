@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "insurance/base.html" %}
 
 {% block title %}
 Insurance Dashboard
@@ -10,391 +10,856 @@ Insurance Dashboard
 
 {% block content %}
 
-<div class="row">
+<!-- ========================= -->
+<!-- COMPANY WELCOME -->
+<!-- ========================= -->
 
-    <div class="col-md-3 mb-4">
-        <div class="card dashboard-card bg-warning text-white">
-            <div class="card-body text-center">
-                <h2>{{ pending }}</h2>
-                <h5>Pending Claims</h5>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-    <div class="col-md-3 mb-4">
-        <div class="card dashboard-card bg-info text-white">
-            <div class="card-body text-center">
-                <h2>{{ review }}</h2>
-                <h5>Under Review</h5>
-            </div>
-        </div>
-    </div>
+    <div>
 
-    <div class="col-md-3 mb-4">
-        <div class="card dashboard-card bg-success text-white">
-            <div class="card-body text-center">
-                <h2>{{ approved }}</h2>
-                <h5>Approved</h5>
-            </div>
-        </div>
-    </div>
+        <h2 class="fw-bold mb-1">
+            Insurance Dashboard
+        </h2>
 
-    <div class="col-md-3 mb-4">
-        <div class="card dashboard-card bg-danger text-white">
-            <div class="card-body text-center">
-                <h2>{{ rejected }}</h2>
-                <h5>Rejected</h5>
-            </div>
-        </div>
+        <p class="text-muted mb-0">
+
+            Welcome,
+            <strong>
+                {{ company.company_name }}
+            </strong>
+
+        </p>
+
     </div>
 
 </div>
 
 
-<div class="row">
+<!-- ========================= -->
+<!-- CLAIM STATISTICS -->
+<!-- ========================= -->
 
-<div class="col-lg-8">
+<div class="row g-4 mb-4">
 
-<div class="card shadow">
 
-<div class="card-header bg-primary text-white">
+    <!-- Pending Claims -->
 
-<h5 class="mb-0">
+    <div class="col-xl-3 col-md-6">
 
-Recent Insurance Claims
+        <div class="card dashboard-card
+                    bg-warning
+                    text-white
+                    border-0
+                    shadow-sm
+                    h-100">
 
-</h5>
+            <div class="card-body text-center">
 
-</div>
+                <div class="mb-2">
 
-<div class="card-body">
+                    <i class="bi bi-clock-history fs-1"></i>
 
-<table class="table table-hover align-middle">
+                </div>
 
-<thead>
+                <h2 class="fw-bold mb-1">
 
-<tr>
+                    {{ pending_claims }}
 
-<th>Claim ID</th>
+                </h2>
 
-<th>Patient</th>
+                <h5 class="mb-0">
 
-<th>Status</th>
+                    Pending Claims
 
-<th>Date</th>
+                </h5>
 
-<th></th>
+            </div>
 
-</tr>
+        </div>
 
-</thead>
+    </div>
 
-<tbody>
 
-{% for claim in recent_claims %}
+    <!-- Under Review -->
 
-<tr>
+    <div class="col-xl-3 col-md-6">
 
-<td>
+        <div class="card dashboard-card
+                    bg-info
+                    text-white
+                    border-0
+                    shadow-sm
+                    h-100">
 
-{{ claim.claim_id }}
+            <div class="card-body text-center">
 
-</td>
+                <div class="mb-2">
 
-<td>
+                    <i class="bi bi-search fs-1"></i>
 
-{{ claim.patient.patient_id }}
+                </div>
 
-</td>
+                <h2 class="fw-bold mb-1">
 
-<td>
+                    {{ under_review_claims }}
 
-{% if claim.claim_status == "Pending" %}
+                </h2>
 
-<span class="badge bg-warning">
+                <h5 class="mb-0">
 
-Pending
+                    Under Review
 
-</span>
+                </h5>
 
-{% elif claim.claim_status == "Approved" %}
+            </div>
 
-<span class="badge bg-success">
+        </div>
 
-Approved
+    </div>
 
-</span>
 
-{% elif claim.claim_status == "Rejected" %}
+    <!-- Approved -->
 
-<span class="badge bg-danger">
+    <div class="col-xl-3 col-md-6">
 
-Rejected
+        <div class="card dashboard-card
+                    bg-success
+                    text-white
+                    border-0
+                    shadow-sm
+                    h-100">
 
-</span>
+            <div class="card-body text-center">
 
-{% else %}
+                <div class="mb-2">
 
-<span class="badge bg-info">
+                    <i class="bi bi-check-circle fs-1"></i>
 
-Under Review
+                </div>
 
-</span>
+                <h2 class="fw-bold mb-1">
 
-{% endif %}
+                    {{ approved_claims }}
 
-</td>
+                </h2>
 
-<td>
+                <h5 class="mb-0">
 
-{{ claim.applied_date }}
+                    Approved
 
-</td>
+                </h5>
 
-<td>
+            </div>
 
-<a href="{% url 'insurance_claim_detail' claim.id %}"
+        </div>
 
-class="btn btn-primary btn-sm">
+    </div>
 
-View
 
-</a>
+    <!-- Rejected -->
 
-</td>
+    <div class="col-xl-3 col-md-6">
 
-</tr>
+        <div class="card dashboard-card
+                    bg-danger
+                    text-white
+                    border-0
+                    shadow-sm
+                    h-100">
 
-{% empty %}
+            <div class="card-body text-center">
 
-<tr>
+                <div class="mb-2">
 
-<td colspan="5" class="text-center">
+                    <i class="bi bi-x-circle fs-1"></i>
 
-No Claims Found
+                </div>
 
-</td>
+                <h2 class="fw-bold mb-1">
 
-</tr>
+                    {{ rejected_claims }}
 
-{% endfor %}
+                </h2>
 
-</tbody>
+                <h5 class="mb-0">
 
-</table>
+                    Rejected
 
-</div>
+                </h5>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-
-
-<div class="col-lg-4">
-
-<div class="card shadow">
-
-<div class="card-header bg-dark text-white">
-
-<h5 class="mb-0">
-
-Latest Notifications
-
-</h5>
-
-</div>
-
-<div class="card-body">
-
-{% for claim in notifications %}
-
-<div class="border-bottom py-3">
-
-<strong>
-
-{{ claim.patient.patient_id }}
-
-</strong>
-
-<br>
-
-submitted
-
-<strong>
-
-{{ claim.claim_id }}
-
-</strong>
-
-<br>
-
-<small class="text-muted">
-
-{{ claim.created_at }}
-
-</small>
-
-<br><br>
-
-<a href="{% url 'insurance_claim_detail' claim.id %}"
-
-class="btn btn-outline-primary btn-sm">
-
-Review
-
-</a>
-
-</div>
-
-{% empty %}
-
-<p class="text-center">
-
-No Pending Claims
-
-</p>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 
 
+<!-- ========================= -->
+<!-- RECENT CLAIMS + NOTIFICATIONS -->
+<!-- ========================= -->
 
-<div class="row mt-4">
+<div class="row g-4">
 
-<div class="col-md-6">
 
-<div class="card shadow">
+    <!-- Recent Claims -->
 
-<div class="card-header bg-success text-white">
+    <div class="col-lg-8">
 
-Quick Statistics
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-header
+                        bg-primary
+                        text-white
+                        d-flex
+                        justify-content-between
+                        align-items-center">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-file-earmark-medical me-2"></i>
+
+                    Recent Insurance Claims
+
+                </h5>
+
+                <a
+                    href="{% url 'insurance_claim_list' %}"
+                    class="btn btn-light btn-sm"
+                >
+
+                    View All
+
+                </a>
+
+            </div>
+
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table
+                                  table-hover
+                                  align-middle
+                                  mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>
+                                    Claim ID
+                                </th>
+
+                                <th>
+                                    Patient
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Date
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for claim in recent_claims %}
+
+                            <tr>
+
+
+                                <!-- Claim ID -->
+
+                                <td>
+
+                                    <strong>
+                                        {{ claim.claim_id|default:"Pending ID" }}
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- Patient -->
+
+                                <td>
+
+                                    <strong>
+                                        {{ claim.patient.patient_id }}
+                                    </strong>
+
+                                    <br>
+
+                                    <small class="text-muted">
+
+                                        {{ claim.patient.first_name }}
+                                        {{ claim.patient.last_name }}
+
+                                    </small>
+
+                                </td>
+
+
+                                <!-- Status -->
+
+                                <td>
+
+                                    {% if claim.claim_status == "Pending" %}
+
+                                        <span class="badge
+                                                     bg-warning
+                                                     text-dark">
+
+                                            <i class="bi bi-clock me-1"></i>
+
+                                            Pending
+
+                                        </span>
+
+
+                                    {% elif claim.claim_status == "Under Review" %}
+
+                                        <span class="badge bg-info">
+
+                                            <i class="bi bi-search me-1"></i>
+
+                                            Under Review
+
+                                        </span>
+
+
+                                    {% elif claim.claim_status == "Approved" %}
+
+                                        <span class="badge bg-success">
+
+                                            <i class="bi bi-check-circle me-1"></i>
+
+                                            Approved
+
+                                        </span>
+
+
+                                    {% elif claim.claim_status == "Rejected" %}
+
+                                        <span class="badge bg-danger">
+
+                                            <i class="bi bi-x-circle me-1"></i>
+
+                                            Rejected
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- Date -->
+
+                                <td>
+
+                                    {{ claim.applied_date|date:"d M Y" }}
+
+                                </td>
+
+
+                                <!-- Action -->
+
+                                <td>
+
+                                    <a
+                                        href="{% url 'insurance_claim_detail' claim.pk %}"
+                                        class="btn btn-primary btn-sm"
+                                    >
+
+                                        <i class="bi bi-eye me-1"></i>
+
+                                        View
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td
+                                    colspan="5"
+                                    class="text-center py-5"
+                                >
+
+                                    <i class="bi
+                                              bi-folder-x
+                                              fs-1
+                                              text-muted">
+                                    </i>
+
+                                    <p class="text-muted mt-2 mb-0">
+
+                                        No claims found for
+                                        {{ company.company_name }}.
+
+                                    </p>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Latest Notifications -->
+
+    <div class="col-lg-4">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-header
+                        bg-dark
+                        text-white">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-bell me-2"></i>
+
+                    Latest Notifications
+
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+                {% for claim in notifications %}
+
+                <div class="border-bottom
+                            py-3">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-start">
+
+                        <div>
+
+                            <strong>
+
+                                {{ claim.claim_id }}
+
+                            </strong>
+
+                            <br>
+
+                            <span class="text-muted">
+
+                                Patient:
+                                {{ claim.patient.patient_id }}
+
+                            </span>
+
+                        </div>
+
+
+                        <span class="badge bg-warning text-dark">
+
+                            Pending
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="mb-1 mt-2">
+
+                        A new insurance claim has been submitted
+                        for review.
+
+                    </p>
+
+
+                    <small class="text-muted">
+
+                        {{ claim.created_at|date:"d M Y, h:i A" }}
+
+                    </small>
+
+
+                    <div class="mt-2">
+
+                        <a
+                            href="{% url 'insurance_claim_detail' claim.pk %}"
+                            class="btn
+                                   btn-outline-primary
+                                   btn-sm"
+                        >
+
+                            <i class="bi bi-eye me-1"></i>
+
+                            Review Claim
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                {% empty %}
+
+                <div class="text-center py-4">
+
+                    <i class="bi
+                              bi-check-circle
+                              fs-1
+                              text-success">
+                    </i>
+
+                    <p class="text-muted mt-2 mb-0">
+
+                        No Pending Claims
+
+                    </p>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
-<div class="card-body">
 
-<table class="table">
 
-<tr>
+<!-- ========================= -->
+<!-- QUICK STATISTICS + WORKFLOW -->
+<!-- ========================= -->
 
-<td>Total Pending</td>
+<div class="row g-4 mt-1">
 
-<td>
 
-<strong>{{ pending }}</strong>
+    <!-- Quick Statistics -->
 
-</td>
+    <div class="col-lg-6">
 
-</tr>
+        <div class="card border-0 shadow-sm">
 
-<tr>
+            <div class="card-header
+                        bg-success
+                        text-white">
 
-<td>Under Review</td>
+                <h5 class="mb-0">
 
-<td>
+                    <i class="bi bi-bar-chart me-2"></i>
 
-<strong>{{ review }}</strong>
+                    Quick Statistics
 
-</td>
+                </h5>
 
-</tr>
+            </div>
 
-<tr>
 
-<td>Approved</td>
+            <div class="card-body">
 
-<td>
+                <div class="d-flex
+                            justify-content-between
+                            align-items-center
+                            py-3
+                            border-bottom">
 
-<strong>{{ approved }}</strong>
+                    <span>
 
-</td>
+                        <i class="bi
+                                  bi-files
+                                  text-primary
+                                  me-2">
+                        </i>
 
-</tr>
+                        Total Claims
 
-<tr>
+                    </span>
 
-<td>Rejected</td>
+                    <strong class="fs-5">
 
-<td>
+                        {{ total_claims }}
 
-<strong>{{ rejected }}</strong>
+                    </strong>
 
-</td>
+                </div>
 
-</tr>
 
-</table>
+                <div class="d-flex
+                            justify-content-between
+                            align-items-center
+                            py-3
+                            border-bottom">
 
-</div>
+                    <span>
 
-</div>
+                        <i class="bi
+                                  bi-clock
+                                  text-warning
+                                  me-2">
+                        </i>
 
-</div>
+                        Pending
 
-<div class="col-md-6">
+                    </span>
 
-<div class="card shadow">
+                    <strong class="fs-5">
 
-<div class="card-header bg-info text-white">
+                        {{ pending_claims }}
 
-Insurance Workflow
+                    </strong>
 
-</div>
+                </div>
 
-<div class="card-body text-center">
 
-<h5>
+                <div class="d-flex
+                            justify-content-between
+                            align-items-center
+                            py-3
+                            border-bottom">
 
-Patient
+                    <span>
 
-</h5>
+                        <i class="bi
+                                  bi-search
+                                  text-info
+                                  me-2">
+                        </i>
 
-↓
+                        Under Review
 
-<h5>
+                    </span>
 
-Claim Submitted
+                    <strong class="fs-5">
 
-</h5>
+                        {{ under_review_claims }}
 
-↓
+                    </strong>
 
-<h5>
+                </div>
 
-Insurance Review
 
-</h5>
+                <div class="d-flex
+                            justify-content-between
+                            align-items-center
+                            py-3
+                            border-bottom">
 
-↓
+                    <span>
 
-<h5>
+                        <i class="bi
+                                  bi-check-circle
+                                  text-success
+                                  me-2">
+                        </i>
 
-Approve / Reject
+                        Approved
 
-</h5>
+                    </span>
 
-↓
+                    <strong class="fs-5">
 
-<h5>
+                        {{ approved_claims }}
 
-Patient Portal Updated
+                    </strong>
 
-</h5>
+                </div>
 
-</div>
 
-</div>
+                <div class="d-flex
+                            justify-content-between
+                            align-items-center
+                            py-3">
 
-</div>
+                    <span>
+
+                        <i class="bi
+                                  bi-x-circle
+                                  text-danger
+                                  me-2">
+                        </i>
+
+                        Rejected
+
+                    </span>
+
+                    <strong class="fs-5">
+
+                        {{ rejected_claims }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Insurance Workflow -->
+
+    <div class="col-lg-6">
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-header
+                        bg-info
+                        text-white">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-diagram-3 me-2"></i>
+
+                    Insurance Workflow
+
+                </h5>
+
+            </div>
+
+
+            <div class="card-body text-center py-4">
+
+
+                <div class="mb-3">
+
+                    <i class="bi
+                              bi-person-circle
+                              fs-2
+                              text-primary">
+                    </i>
+
+                    <h6 class="mt-2 mb-0">
+                        Patient
+                    </h6>
+
+                </div>
+
+
+                <div class="text-muted fs-4">
+                    ↓
+                </div>
+
+
+                <div class="mb-3">
+
+                    <i class="bi
+                              bi-file-earmark-text
+                              fs-2
+                              text-primary">
+                    </i>
+
+                    <h6 class="mt-2 mb-0">
+                        Claim Submitted
+                    </h6>
+
+                </div>
+
+
+                <div class="text-muted fs-4">
+                    ↓
+                </div>
+
+
+                <div class="mb-3">
+
+                    <i class="bi
+                              bi-search
+                              fs-2
+                              text-info">
+                    </i>
+
+                    <h6 class="mt-2 mb-0">
+                        Insurance Review
+                    </h6>
+
+                </div>
+
+
+                <div class="text-muted fs-4">
+                    ↓
+                </div>
+
+
+                <div class="mb-3">
+
+                    <i class="bi
+                              bi-check2-square
+                              fs-2
+                              text-success">
+                    </i>
+
+                    <h6 class="mt-2 mb-0">
+                        Approve / Reject
+                    </h6>
+
+                </div>
+
+
+                <div class="text-muted fs-4">
+                    ↓
+                </div>
+
+
+                <div>
+
+                    <i class="bi
+                              bi-person-check
+                              fs-2
+                              text-success">
+                    </i>
+
+                    <h6 class="mt-2 mb-0">
+                        Patient Portal Updated
+                    </h6>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
 {% endblock %}
+

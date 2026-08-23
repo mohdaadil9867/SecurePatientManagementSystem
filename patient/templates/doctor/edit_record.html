@@ -1,0 +1,56 @@
+{% extends "doctor/base.html" %}
+
+{% block content %}
+
+<div style="padding:30px; max-width:900px;">
+
+    <h2>Edit Medical Record</h2>
+
+    <h3>
+        Patient:
+        {{ record.patient.patient_id }}
+        -
+        {{ record.patient.first_name }}
+        {{ record.patient.last_name }}
+    </h3>
+
+    <hr>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button
+            type="submit"
+            style="
+                padding:10px 20px;
+                background:#ffc107;
+                color:black;
+                border:none;
+                border-radius:5px;
+            "
+        >
+            Update Medical Record
+        </button>
+
+        <a
+            href="{% url 'doctor_patient_detail' record.patient.id %}"
+            style="
+                margin-left:10px;
+                padding:10px 20px;
+                background:#6c757d;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+            "
+        >
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

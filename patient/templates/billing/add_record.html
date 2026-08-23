@@ -1,0 +1,133 @@
+{% extends "doctor/base.html" %}
+
+{% block content %}
+
+<div style="padding: 30px;">
+
+    <h2>Add Medical Record</h2>
+
+    <p>
+        Patient:
+        <strong>
+            {{ patient.patient_id }}
+            -
+            {{ patient.first_name }}
+            {{ patient.last_name }}
+        </strong>
+    </p>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <div>
+            <label>Doctor</label>
+            {{ form.doctor }}
+            {{ form.doctor.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Doctor Name</label>
+            {{ form.doctor_name }}
+            {{ form.doctor_name.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Department</label>
+            {{ form.department }}
+            {{ form.department.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Diagnosis</label>
+            {{ form.diagnosis }}
+            {{ form.diagnosis.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Symptoms</label>
+            {{ form.symptoms }}
+            {{ form.symptoms.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Treatment</label>
+            {{ form.treatment }}
+            {{ form.treatment.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Prescription</label>
+            {{ form.prescription }}
+            {{ form.prescription.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Medical Report</label>
+            {{ form.medical_report }}
+            {{ form.medical_report.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Visit Date</label>
+            {{ form.visit_date }}
+            {{ form.visit_date.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Next Visit</label>
+            {{ form.next_visit }}
+            {{ form.next_visit.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Remarks</label>
+            {{ form.remarks }}
+            {{ form.remarks.errors }}
+        </div>
+
+        <br>
+
+        <div>
+            <label>Status</label>
+            {{ form.status }}
+            {{ form.status.errors }}
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Save Medical Record
+        </button>
+
+        <a href="{% url 'doctor_patient_detail' patient.id %}">
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "insurance/base.html" %}
+
+{% block title %}
+Insurance Reports
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+
+    <h2 class="fw-bold">
+        Insurance Reports
+    </h2>
+
+    <p class="text-muted">
+        Overview of insurance claim statistics
+    </p>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col-md-3 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-hourglass-split fs-1 text-warning"></i>
+
+                <h3 class="mt-2">
+                    {{ pending }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Pending Claims
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-search fs-1 text-info"></i>
+
+                <h3 class="mt-2">
+                    {{ review }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Under Review
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-check-circle fs-1 text-success"></i>
+
+                <h3 class="mt-2">
+                    {{ approved }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Approved
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-x-circle fs-1 text-danger"></i>
+
+                <h3 class="mt-2">
+                    {{ rejected }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Rejected
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-header bg-dark text-white">
+
+        <h5 class="mb-0">
+            Claim Summary
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <table class="table">
+
+            <tr>
+
+                <th>
+                    Total Claims
+                </th>
+
+                <td>
+                    {{ total_claims }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <th>
+                    Pending Claims
+                </th>
+
+                <td>
+                    {{ pending }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <th>
+                    Under Review
+                </th>
+
+                <td>
+                    {{ review }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <th>
+                    Approved Claims
+                </th>
+
+                <td>
+                    {{ approved }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <th>
+                    Rejected Claims
+                </th>
+
+                <td>
+                    {{ rejected }}
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -21,13 +21,14 @@ class Patient(models.Model):
         blank=True,
         null=True,
     )
+
     user = models.OneToOneField(
-    User,
-    on_delete=models.CASCADE,
-    null=True,
-    blank=True,
-    related_name="patient_profile",
-)
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="patient_profile",
+    )
 
     GENDER_CHOICES = [
         ("Male", "Male"),
@@ -75,43 +76,53 @@ class Patient(models.Model):
         validators=[validate_phone],
     )
 
-    email = models.EmailField(unique=True)
+    email = models.EmailField(
+        unique=True
+    )
 
     address = models.TextField()
 
-   
-
-    emergency_contact_number = models.CharField(
-        max_length=10,
-        validators=[validate_phone],
+    profile_photo = models.ImageField(
+    upload_to="patient_photos/",
+    blank=True,
+    null=True
+)
+    status = models.BooleanField(
+        default=True
     )
 
-    photo = models.ImageField(
-        upload_to="patient_photos/",
-        blank=True,
-        null=True,
+    created_at = models.DateTimeField(
+        auto_now_add=True
     )
 
-    status = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+    def __str__(self):
+        return f"{self.patient_id} - {self.first_name} {self.last_name}"
 
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    updated_at = models.DateTimeField(auto_now=True)
     class Meta:
         permissions = [
-            ("view_patient_details", "Can view patient details"),
-            ("edit_patient_details", "Can edit patient details"),
-            ("delete_patient_details", "Can delete patient details"),
+            (
+                "view_patient_details",
+                "Can view patient details"
+            ),
+            (
+                "edit_patient_details",
+                "Can edit patient details"
+            ),
+            (
+                "delete_patient_details",
+                "Can delete patient details"
+            ),
         ]
 
-    # Default Manager
     objects = models.Manager()
-
-    # Active Patient Manager
     active_objects = ActivePatientManager()
 
     @property
     def age(self):
+
         from datetime import date
 
         today = date.today()
@@ -121,42 +132,56 @@ class Patient(models.Model):
             - self.date_of_birth.year
             - (
                 (today.month, today.day)
-                < (self.date_of_birth.month, self.date_of_birth.day)
+                < (
+                    self.date_of_birth.month,
+                    self.date_of_birth.day
+                )
             )
         )
 
     def clean(self):
+
         super().clean()
 
         if (
-            Patient.objects.exclude(pk=self.pk)
+            Patient.objects
+            .exclude(pk=self.pk)
             .filter(email=self.email)
             .exists()
         ):
             raise ValidationError(
-                {"email": "Email already exists."}
+                {
+                    "email": "Email already exists."
+                }
             )
-        
 
     def save(self, *args, **kwargs):
 
-        self.full_clean()
-
-        is_new = self.pk is None
+        # --------------------------------
+        # 1. Save patient first
+        # --------------------------------
 
         super().save(*args, **kwargs)
 
-        if is_new:
-            self.patient_id = generate_patient_id(self.pk)
+        # --------------------------------
+        # 2. Generate Patient ID
+        # --------------------------------
 
-            Patient.objects.filter(pk=self.pk).update(
+        if not self.patient_id:
+
+            self.patient_id = f"PAT{self.pk:04d}"
+
+            Patient.objects.filter(
+                pk=self.pk
+            ).update(
                 patient_id=self.patient_id
             )
 
-            self.patient_id = generate_patient_id(self.pk)
+        # --------------------------------
+        # 3. Create patient login account
+        # --------------------------------
 
-        # Create Login Account only once
-        if self.user is None:
+        if self.user_id is None:
 
             user = User.objects.create_user(
                 username=self.patient_id,
@@ -166,24 +191,42 @@ class Patient(models.Model):
                 email=self.email,
             )
 
-            self.user = user
-
-            Patient.objects.filter(pk=self.pk).update(
+            Patient.objects.filter(
+                pk=self.pk
+            ).update(
                 user=user
             )
 
+            # Keep current object updated
+            self.user = user
+
+        # --------------------------------
+        # 4. Update existing patient user
+        # --------------------------------
+
         else:
 
-            self.user.first_name = self.first_name
-            self.user.last_name = self.last_name
-            self.user.email = self.email
-            self.user.save()
+            user = self.user
+
+            user.first_name = self.first_name
+            user.last_name = self.last_name
+            user.email = self.email
+
+            user.save(
+                update_fields=[
+                    "first_name",
+                    "last_name",
+                    "email",
+                ]
+            )
 
     def __str__(self):
 
-        return f"{self.patient_id} - {self.first_name} {self.last_name}"
-
-
+        return (
+            f"{self.patient_id} - "
+            f"{self.first_name} "
+            f"{self.last_name}"
+        )
 class MedicalRecord(models.Model):
 
     patient = models.ForeignKey(
@@ -479,18 +522,14 @@ class InsuranceCompany(models.Model):
 
         if is_new and self.user is None:
 
-            username = self.registration_number
+            username = self.company_name
 
             if not User.objects.filter(username=username).exists():
 
                 user = User.objects.create_user(
-
                     username=username,
-
                     password="insurance@123",
-
                     first_name=self.company_name,
-
                     email=self.email,
                 )
 
@@ -507,7 +546,6 @@ class InsuranceCompany(models.Model):
             self.user.save()
 
     def __str__(self):
-
         return self.company_name
 
 class InsuranceClaim(models.Model):
@@ -666,16 +704,16 @@ class InsuranceClaim(models.Model):
         super().save(*args, **kwargs)
 
         if is_new:
+         self.claim_id = f"CLM{self.pk:04d}"
 
-            self.claim_id = f"CLM{self.pk:04d}"
+         InsuranceClaim.objects.filter(
+           pk=self.pk
+         ).update(
+             claim_id=self.claim_id
+         )
 
-            InsuranceClaim.objects.filter(
-                pk=self.pk
-            ).update(
-                claim_id=self.claim_id
-            )
+         self.claim_id = f"CLM{self.pk:04d}"
 
-            self.claim_id = f"CLM{self.pk:04d}"
-
+            
     def __str__(self):
       return self.claim_id or f"Insurance Claim #{self.pk}"

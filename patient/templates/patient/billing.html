@@ -1,124 +1,88 @@
-{% extends "base.html" %}
+{% extends "patient/base.html" %}
+
 {% block title %}
-Billing
+My Bills
 {% endblock %}
+
 
 {% block content %}
 
-<div class="container-fluid">
+<h2 class="mb-4">
+    My Bills
+</h2>
 
-    <!-- Header -->
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="card">
 
-        <div>
+    <div class="card-header bg-success text-white">
 
-            <h2 class="fw-bold">
+        <strong>
+            Patient ID:
+            {{ patient.patient_id }}
+        </strong>
 
-                <i class="bi bi-receipt-cutoff text-primary"></i>
-
-                Billing Management
-
-            </h2>
-
-            <p class="text-muted">
-
-                View your bills and payment details.
-
-            </p>
-
-        </div>
+        -
+        {{ patient.first_name }}
+        {{ patient.last_name }}
 
     </div>
 
-    <!-- Search -->
 
-    <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
 
-        <div class="card-body">
+        {% if bills %}
 
-            <input
-                type="text"
-                id="searchBill"
-                class="form-control"
-                placeholder="Search Bill Number...">
+        <div class="table-responsive">
 
-        </div>
+            <table class="table table-bordered table-striped">
 
-    </div>
-
-    <!-- Bills -->
-
-    <div class="card shadow border-0">
-
-        <div class="card-header bg-primary text-white">
-
-            <h5 class="mb-0">
-
-                Billing History
-
-            </h5>
-
-        </div>
-
-        <div class="card-body">
-
-            <div class="table-responsive">
-
-                <table class="table table-hover align-middle" id="billTable">
-
-                    <thead class="table-primary">
+                <thead class="table-dark">
 
                     <tr>
 
-                        <th>Bill No.</th>
+                        <th>Bill Number</th>
 
-                        <th>Date</th>
+                        <th>Medical Record</th>
+
+                        <th>Bill Date</th>
 
                         <th>Total Amount</th>
 
                         <th>Payment Method</th>
 
-                        <th>Status</th>
+                        <th>Payment Status</th>
 
-                        <th>Bill</th>
+                        <th>Download</th>
 
                     </tr>
 
-                    </thead>
+                </thead>
 
-                    <tbody>
 
-                    {% for bill in bills %}
+                <tbody>
+
+                {% for bill in bills %}
 
                     <tr>
 
                         <td>
-
-                            <strong>
-
-                                {{ bill.bill_number }}
-
-                            </strong>
-
+                            {{ bill.bill_number }}
                         </td>
 
                         <td>
+                            {{ bill.medical_record.visit_date }}
+                        </td>
 
+                        <td>
                             {{ bill.bill_date }}
-
                         </td>
 
                         <td>
-
                             ₹ {{ bill.total_amount }}
-
                         </td>
 
                         <td>
-
                             {{ bill.payment_method }}
-
                         </td>
 
                         <td>
@@ -126,17 +90,13 @@ Billing
                             {% if bill.payment_status == "Paid" %}
 
                                 <span class="badge bg-success">
-
                                     Paid
-
                                 </span>
 
                             {% else %}
 
-                                <span class="badge bg-danger">
-
-                                    Pending
-
+                                <span class="badge bg-warning text-dark">
+                                    {{ bill.payment_status }}
                                 </span>
 
                             {% endif %}
@@ -145,62 +105,37 @@ Billing
 
                         <td>
 
-                            <a href="{% url 'download-bill' bill.id %}"
-
-                               class="btn btn-primary btn-sm">
-
-                                <i class="bi bi-download"></i>
-
-                                Download
-
+                            <a
+                                href="{% url 'download_bill' bill.pk %}"
+                                class="btn btn-sm btn-success"
+                            >
+                                Download PDF
                             </a>
 
                         </td>
 
                     </tr>
 
-                    {% empty %}
+                {% endfor %}
 
-                    <tr>
+                </tbody>
 
-                        <td colspan="6" class="text-center">
+            </table>
 
-                            No Bills Available
+        </div>
 
-                        </td>
+        {% else %}
 
-                    </tr>
+            <div class="alert alert-info">
 
-                    {% endfor %}
-
-                    </tbody>
-
-                </table>
+                No bills are available for you yet.
 
             </div>
 
-        </div>
+        {% endif %}
 
     </div>
 
 </div>
-
-<script>
-
-document.getElementById("searchBill").addEventListener("keyup",function(){
-
-let value=this.value.toLowerCase();
-
-let rows=document.querySelectorAll("#billTable tbody tr");
-
-rows.forEach(function(row){
-
-row.style.display=row.innerText.toLowerCase().includes(value) ? "" : "none";
-
-});
-
-});
-
-</script>
 
 {% endblock %}

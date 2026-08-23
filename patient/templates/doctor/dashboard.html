@@ -2,13 +2,140 @@
 
 {% block content %}
 
-<h2>Doctor Dashboard</h2>
+<div style="padding: 30px;">
 
-<p>Welcome Dr. {{ request.user.username }}</p>
+    <h2>Doctor Dashboard</h2>
 
-<ul>
-    <li>Total Patients : {{ total_patients }}</li>
-    <li>Total Records : {{ total_records }}</li>
-</ul>
+    <p>
+        Welcome Dr. {{ request.user.username }}
+    </p>
+
+    <hr>
+
+    <!-- Dashboard Statistics -->
+
+    <div style="display:flex; gap:20px; margin-bottom:30px;">
+
+        <div style="
+            border:1px solid #ddd;
+            padding:20px;
+            border-radius:8px;
+            min-width:180px;
+        ">
+            <h3>Total Patients</h3>
+            <p>{{ total_patients }}</p>
+        </div>
+
+        <div style="
+            border:1px solid #ddd;
+            padding:20px;
+            border-radius:8px;
+            min-width:180px;
+        ">
+            <h3>Total Records</h3>
+            <p>{{ total_records }}</p>
+        </div>
+
+        <div style="
+            border:1px solid #ddd;
+            padding:20px;
+            border-radius:8px;
+            min-width:180px;
+        ">
+            <h3>Today's Visits</h3>
+            <p>{{ today_visits }}</p>
+        </div>
+
+    </div>
+
+
+    <!-- Doctor Actions -->
+
+    <h3>Doctor Actions</h3>
+
+    <div style="margin-bottom:30px;">
+
+        <a
+            href="{% url 'doctor_add_patient' %}"
+            style="
+                display:inline-block;
+                padding:12px 20px;
+                background:#007bff;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                margin-right:10px;
+            "
+        >
+            + Add Patient
+        </a>
+
+        <a
+            href="{% url 'doctor_patients' %}"
+            style="
+                display:inline-block;
+                padding:12px 20px;
+                background:#28a745;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+            "
+        >
+            View Patients
+        </a>
+
+    </div>
+
+
+    <!-- Recent Medical Records -->
+
+    <h3>Recent Medical Records</h3>
+
+    {% if recent_records %}
+
+        {% for record in recent_records %}
+
+            <div style="
+                border:1px solid #ddd;
+                padding:15px;
+                margin-bottom:15px;
+                border-radius:8px;
+            ">
+
+                <p>
+                    <strong>Patient:</strong>
+                    {{ record.patient.first_name }}
+                    {{ record.patient.last_name }}
+                </p>
+
+                <p>
+                    <strong>Visit Date:</strong>
+                    {{ record.visit_date }}
+                </p>
+
+                <p>
+                    <strong>Diagnosis:</strong>
+                    {{ record.diagnosis }}
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div style="
+            padding:20px;
+            background:#fff3cd;
+            border:1px solid #ffeeba;
+            border-radius:5px;
+        ">
+            No recent medical records found.
+        </div>
+
+    {% endif %}
+
+</div>
 
 {% endblock %}
+

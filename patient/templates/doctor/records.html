@@ -1,0 +1,122 @@
+{% extends "doctor/base.html" %}
+
+{% block title %}
+Medical Records - Doctor Portal
+{% endblock %}
+
+{% block page_title %}
+Medical Records
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h2 class="fw-bold">
+            <i class="bi bi-file-medical me-2"></i>
+            Medical Records
+        </h2>
+
+        <p class="text-muted">
+            View and manage patient medical records.
+        </p>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                Patient Medical Records
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            {% if records %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>Patient</th>
+                            <th>Diagnosis</th>
+                            <th>Treatment</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for record in records %}
+
+                        <tr>
+
+                            <td>
+                                {{ record.patient }}
+                            </td>
+
+                            <td>
+                                {{ record.diagnosis }}
+                            </td>
+
+                            <td>
+                                {{ record.treatment }}
+                            </td>
+
+                            <td>
+                                {{ record.created_at|date:"d M Y" }}
+                            </td>
+
+                            <td>
+
+                                <a href="{% url 'doctor_patient_detail' record.patient.id %}"
+                                   class="btn btn-sm btn-primary">
+
+                                    View
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="text-center py-5">
+
+                <i class="bi bi-file-medical"
+                   style="font-size:50px;color:#6c757d;"></i>
+
+                <h5 class="mt-3">
+                    No Medical Records Found
+                </h5>
+
+                <p class="text-muted">
+                    Medical records will appear here when available.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

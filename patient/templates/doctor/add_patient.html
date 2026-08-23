@@ -1,0 +1,143 @@
+{% extends "doctor/base.html" %}
+
+{% block content %}
+
+<div style="padding: 30px;">
+
+    <h2>Add New Patient</h2>
+
+    <hr>
+
+    {% if form.non_field_errors %}
+        <div style="
+            background:#f8d7da;
+            color:#842029;
+            padding:15px;
+            margin-bottom:20px;
+            border-radius:5px;
+        ">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <!-- FIRST NAME -->
+        <div style="margin-bottom:15px;">
+            <label>First Name</label><br>
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+        </div>
+
+        <!-- LAST NAME -->
+        <div style="margin-bottom:15px;">
+            <label>Last Name</label><br>
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+        </div>
+
+        <!-- GENDER -->
+        <div style="margin-bottom:15px;">
+            <label>Gender</label><br>
+            {{ form.gender }}
+            {{ form.gender.errors }}
+        </div>
+
+        <!-- DATE OF BIRTH -->
+        <div style="margin-bottom:15px;">
+            <label>Date of Birth</label><br>
+            {{ form.date_of_birth }}
+            {{ form.date_of_birth.errors }}
+        </div>
+
+        <!-- BLOOD GROUP -->
+        <div style="margin-bottom:15px;">
+            <label>Blood Group</label><br>
+            {{ form.blood_group }}
+            {{ form.blood_group.errors }}
+        </div>
+
+        <!-- PHONE -->
+        <div style="margin-bottom:15px;">
+            <label>Phone Number</label><br>
+            {{ form.phone_number }}
+            {{ form.phone_number.errors }}
+        </div>
+
+        <!-- EMAIL -->
+        <div style="margin-bottom:15px;">
+            <label>Email</label><br>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+
+        <!-- ADDRESS -->
+        <div style="margin-bottom:15px;">
+            <label>Address</label><br>
+            {{ form.address }}
+            {{ form.address.errors }}
+        </div>
+
+        <!-- PROFILE PHOTO -->
+        <div style="margin-bottom:15px;">
+            <label>Patient Photo</label><br>
+
+            {{ form.profile_photo }}
+
+            {{ form.profile_photo.errors }}
+
+            <small style="color:#666;">
+                Upload JPG, JPEG or PNG image.
+            </small>
+        </div>
+
+        <!-- STATUS -->
+        <div style="margin-bottom:20px;">
+
+            {{ form.status }}
+
+            <label>
+                Active Patient
+            </label>
+
+            {{ form.status.errors }}
+
+        </div>
+
+        <!-- BUTTONS -->
+
+        <button
+            type="submit"
+            style="
+                padding:10px 20px;
+                background:#007bff;
+                color:white;
+                border:none;
+                border-radius:5px;
+                cursor:pointer;
+            "
+        >
+            Add Patient
+        </button>
+
+        <a
+            href="{% url 'doctor_patients' %}"
+            style="
+                padding:10px 20px;
+                background:#6c757d;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;
+                margin-left:10px;
+            "
+        >
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

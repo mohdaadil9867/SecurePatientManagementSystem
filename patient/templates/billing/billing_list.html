@@ -133,11 +133,9 @@ Delete
 
 </a>
 
-<a href="{% url 'download-bill' bill.id %}"
-class="btn btn-info btn-sm">
-
-Download PDF
-
+<a href="{% url 'download_bill' bill.pk %}"
+   class="btn btn-primary">
+    Download Bill
 </a>
 
 </td>

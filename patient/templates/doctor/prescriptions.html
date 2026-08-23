@@ -1,0 +1,84 @@
+{% extends "doctor/base.html" %}
+
+{% block content %}
+
+<div style="padding:30px;">
+
+    <h2>Doctor Prescriptions</h2>
+
+    <p>
+        Medical records and prescriptions for your patients.
+    </p>
+
+    <hr>
+
+    {% if records %}
+
+        {% for record in records %}
+
+            <div style="
+                border:1px solid #ddd;
+                padding:20px;
+                margin-bottom:15px;
+                border-radius:8px;
+            ">
+
+                <h3>
+                    {{ record.patient.first_name }}
+                    {{ record.patient.last_name }}
+                </h3>
+
+                <p>
+                    <strong>Patient ID:</strong>
+                    {{ record.patient.patient_id }}
+                </p>
+
+                <p>
+                    <strong>Visit Date:</strong>
+                    {{ record.visit_date }}
+                </p>
+
+                <p>
+                    <strong>Diagnosis:</strong>
+                    {{ record.diagnosis }}
+                </p>
+
+                <p>
+                    <strong>Doctor:</strong>
+                    {{ record.doctor_name }}
+                </p>
+
+                <a
+                    href="{% url 'doctor_patient_detail' record.patient.id %}"
+                    style="
+                        display:inline-block;
+                        padding:8px 15px;
+                        background:#007bff;
+                        color:white;
+                        text-decoration:none;
+                        border-radius:5px;
+                    "
+                >
+                    View Patient
+                </a>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div style="
+            padding:20px;
+            background:#fff3cd;
+            border:1px solid #ffeeba;
+            border-radius:5px;
+        ">
+            No prescriptions or medical records found.
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "insurance/base.html" %}
+
+{% block title %}
+Rejected Claims
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Rejected Claims
+        </h2>
+
+        <p class="text-muted mb-0">
+            View all rejected insurance claims
+        </p>
+    </div>
+
+    <a href="{% url 'insurance_claim_list' %}"
+       class="btn btn-primary">
+
+        <i class="bi bi-file-earmark-medical"></i>
+        All Claims
+
+    </a>
+
+</div>
+
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-header bg-danger text-white">
+
+        <h5 class="mb-0">
+
+            <i class="bi bi-x-circle"></i>
+
+            Rejected Claims
+
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>Claim ID</th>
+
+                        <th>Patient</th>
+
+                        <th>Bill No.</th>
+
+                        <th>Claim Amount</th>
+
+                        <th>Reason / Remarks</th>
+
+                        <th>Date</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for claim in claims %}
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            {{ claim.claim_id }}
+                        </strong>
+                    </td>
+
+
+                    <td>
+
+                        {{ claim.patient.patient_id }}
+
+                        <br>
+
+                        <small class="text-muted">
+
+                            {{ claim.patient.first_name }}
+                            {{ claim.patient.last_name }}
+
+                        </small>
+
+                    </td>
+
+
+                    <td>
+                        {{ claim.bill.bill_number }}
+                    </td>
+
+
+                    <td>
+                        ₹ {{ claim.claim_amount }}
+                    </td>
+
+
+                    <td>
+
+                        {% if claim.remarks %}
+
+                            {{ claim.remarks }}
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                No remarks
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ claim.verified_date }}
+                    </td>
+
+
+                    <td>
+
+                        <a
+                            href="{% url 'insurance_claim_detail' claim.id %}"
+                            class="btn btn-primary btn-sm">
+
+                            <i class="bi bi-eye"></i>
+
+                            View
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="7"
+                        class="text-center text-muted py-4">
+
+                        <i class="bi bi-inbox fs-2"></i>
+
+                        <br>
+
+                        No rejected claims found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
