@@ -1,6 +1,5 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-
 from . import views
 from .views import (
     PatientViewSet,
@@ -9,114 +8,94 @@ from .views import (
     download_bill,
 )
 
-
-# =========================================================
-# REST API ROUTER
-# =========================================================
-
 router = DefaultRouter()
-
 router.register(
     r"patients",
     PatientViewSet
 )
-
 router.register(
     r"medical-records",
     MedicalRecordViewSet
 )
-
 router.register(
     r"bills",
     BillingViewSet
 )
-
-
-# =========================================================
-# URL PATTERNS
-# =========================================================
-
 urlpatterns = [
 
-    # =====================================================
-    # PATIENT PORTAL
-    # =====================================================
-
-    path(
+    
+path(
         "patient/login/",
         views.patient_login,
         name="patient_login",
-    ),
+),
 
-    path(
+path(
         "patient/dashboard/",
         views.patient_dashboard,
         name="patient_dashboard",
-    ),
+),
 
-    path(
+path(
         "patient/profile/",
         views.patient_profile,
         name="patient_profile",
-    ),
-    path(
+),
+    
+path(
     "profile/",
     views.patient_profile,
     name="patient_profile"
 ),
 
-    path(
+path(
         "patient/medical-records/",
         views.patient_medical_records,
         name="patient_medical_records",
-    ),
+),
 
-    path(
+path(
         "patient/billing/",
         views.patient_billing,
         name="patient_billing",
-    ),
+),
 
-    path(
+path(
         "patient/claims/",
         views.patient_claims,
         name="patient_claims",
-    ),
+),
 
-    path(
+path(
         "patient/insurance/apply/",
         views.apply_insurance_claim,
         name="apply_insurance_claim",
-    ),
+),
 
-    path(
+path(
         "patient/claims/new/",
         views.apply_insurance_claim,
         name="patient_new_claim",
-    ),
+),
 
-    path(
+path(
         "patient/bill/<int:pk>/download/",
         views.patient_download_bill,
         name="patient_download_bill",
-    ),
+),
 
-    path(
+path(
         "patient/change-password/",
         views.change_password,
         name="change_password",
-    ),
+),
 
-    path(
+path(
         "patient/logout/",
         views.patient_logout,
         name="patient_logout",
-    ),
+),
 
-
-    # =========================
-# INSURANCE PORTAL
-# =========================
 
 path(
     "insurance/login/",
@@ -185,120 +164,109 @@ path(
 ),
 
 
-    # =====================================================
-    # DOCTOR PORTAL
-    # =====================================================
-
-    path(
+path(
         "doctor/login/",
         views.doctor_login,
         name="doctor_login",
-    ),
+),
 
-    path(
+path(
         "doctor/dashboard/",
         views.doctor_dashboard,
         name="doctor_dashboard",
-    ),
+),
 
-    path(
+path(
         "doctor/patients/",
         views.doctor_patients,
         name="doctor_patients",
-    ),
+),
 
-    # IMPORTANT:
-    # This matches:
-    # doctor_patient_detail(request, pk)
 
-    path(
+path(
         "doctor/patient/<int:pk>/",
         views.doctor_patient_detail,
         name="doctor_patient_detail",
-    ),
+),
 
-    path(
+path(
         "doctor/patient/<int:patient_id>/add-record/",
         views.add_medical_record,
         name="add_medical_record",
-    ),
+),
 
-    path(
+path(
         "doctor/medical-record/<int:pk>/edit/",
         views.edit_medical_record,
         name="edit_medical_record",
-    ),
+),
 
-    path(
+path(
         "doctor/records/",
         views.doctor_records,
         name="doctor_records",
-    ),
-    path(
+),
+
+path(
     "doctor/prescriptions/",
     views.doctor_prescriptions,
     name="doctor_prescriptions",
 ),
+
 path(
     "doctor/profile/",
     views.doctor_profile,
     name="doctor_profile",
 ),
-    path(
+
+ path(
         "doctor/add/patient/",
         views.doctor_add_patient,
         name="doctor_add_patient",
-    ),
-    path(
+),
+
+path(
     "doctor/change-password/",
     views.doctor_change_password,
     name="doctor_change_password",
 ),
 
-    path(
+path(
         "doctor/logout/",
         views.doctor_logout,
         name="doctor_logout",
-    ),
+),
 
-
-    # =====================================================
-    # HOSPITAL PORTAL
-    # =====================================================
-
-    path(
+path(
         "hospital/login/",
         views.hospital_login,
         name="hospital_login",
-    ),
+),
 
-    path(
+path(
         "hospital/dashboard/",
         views.hospital_dashboard,
         name="hospital_dashboard",
-    ),
+),
 
-    path(
+path(
         "hospital/patients/",
         views.hospital_patients,
         name="hospital_patients",
-    ),
+),
 
-    path(
+path(
         "hospital/patients/add/",
         views.hospital_add_patient,
         name="hospital_add_patient",
-    ),
+),
 
-    path(
+path(
         "hospital/logout/",
         views.hospital_logout,
         name="hospital_logout",
-    ),
+),
 
-    # =====================================================
-# BILLING PORTAL
-# =====================================================
 
 path(
     "billing/login/",
@@ -354,10 +322,5 @@ path(
     name="billing_logout",
 ),
 ]
-
-
-# =========================================================
-# API ROUTER URLS
-# =========================================================
 
 urlpatterns += router.urls

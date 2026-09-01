@@ -12,340 +12,357 @@ Claim Details
 
 
 <!-- ===================================================== -->
+
 <!-- PATIENT INFORMATION -->
+
 <!-- ===================================================== -->
 
 <div class="card shadow mb-4">
 
-    <div class="card-header bg-primary text-white">
+```
+<div class="card-header bg-primary text-white">
+    Patient Information
+</div>
 
-        Patient Information
+<div class="card-body">
 
-    </div>
+    <div class="row">
 
+        <!-- Patient Photo -->
 
-    <div class="card-body">
+        <div class="col-md-3 text-center">
 
-        <div class="row">
+            {% if patient.profile_photo %}
 
+                <img
+                    src="{{ patient.profile_photo.url }}"
+                    alt="Patient Photo"
+                    class="img-fluid rounded-circle"
+                    style="
+                        height:180px;
+                        width:180px;
+                        object-fit:cover;
+                        border:3px solid #ddd;
+                    "
+                >
 
-            <!-- Patient Photo -->
+            {% else %}
 
-            <div class="col-md-3 text-center">
+                <div
+                    class="d-flex align-items-center justify-content-center"
+                    style="
+                        height:180px;
+                        width:180px;
+                        margin:auto;
+                        background:#eeeeee;
+                        border-radius:50%;
+                        color:#777;
+                    "
+                >
+                    No Photo
+                </div>
 
-                {% if patient.profile_photo %}
+            {% endif %}
 
-                    <img
-                        src="{{ patient.profile_photo.url }}"
-                        alt="Patient Photo"
-                        class="img-fluid rounded-circle"
-                        style="
-                            height:180px;
-                            width:180px;
-                            object-fit:cover;
-                            border:3px solid #ddd;
-                        "
-                    >
-
-                {% else %}
-
-                    <div
-                        class="d-flex align-items-center justify-content-center"
-                        style="
-                            height:180px;
-                            width:180px;
-                            margin:auto;
-                            background:#eeeeee;
-                            border-radius:50%;
-                            color:#777;
-                        "
-                    >
-
-                        No Photo
-
-                    </div>
-
-                {% endif %}
-
-            </div>
+        </div>
 
 
-            <!-- Patient Details -->
+        <!-- Patient Details -->
 
-            <div class="col-md-9">
+        <div class="col-md-9">
 
-                <p>
-                    <strong>Patient ID :</strong>
+            <p>
+                <strong>Patient ID:</strong>
+                {{ patient.patient_id }}
+            </p>
 
-                    {{ patient.patient_id }}
+            <p>
+                <strong>Name:</strong>
+                {{ patient.first_name }}
+                {{ patient.last_name }}
+            </p>
 
-                </p>
+            <p>
+                <strong>Gender:</strong>
+                {{ patient.gender }}
+            </p>
 
+            <p>
+                <strong>Blood Group:</strong>
+                {{ patient.blood_group }}
+            </p>
 
-                <p>
+            <p>
+                <strong>Date of Birth:</strong>
+                {{ patient.date_of_birth }}
+            </p>
 
-                    <strong>Name :</strong>
+            <p>
+                <strong>Age:</strong>
+                {{ patient.age }}
+            </p>
 
-                    {{ patient.first_name }}
-                    {{ patient.last_name }}
+            <p>
+                <strong>Phone:</strong>
+                {{ patient.phone_number }}
+            </p>
 
-                </p>
+            <p>
+                <strong>Email:</strong>
+                {{ patient.email }}
+            </p>
 
-
-                <p>
-
-                    <strong>Gender :</strong>
-
-                    {{ patient.gender }}
-
-                </p>
-
-
-                <p>
-
-                    <strong>Blood Group :</strong>
-
-                    {{ patient.blood_group }}
-
-                </p>
-
-
-                <p>
-
-                    <strong>Date of Birth :</strong>
-
-                    {{ patient.date_of_birth }}
-
-                </p>
-
-
-                <p>
-
-                    <strong>Phone :</strong>
-
-                    {{ patient.phone_number }}
-
-                </p>
-
-
-                <p>
-
-                    <strong>Email :</strong>
-
-                    {{ patient.email }}
-
-                </p>
-
-            </div>
+            <p>
+                <strong>Address:</strong>
+                {{ patient.address }}
+            </p>
 
         </div>
 
     </div>
 
 </div>
+```
+
+</div>
 
 
 
 <!-- ===================================================== -->
-<!-- MEDICAL RECORD -->
+
+<!-- ALL MEDICAL RECORDS -->
+
 <!-- ===================================================== -->
 
 <div class="card shadow mb-4">
 
-    <div class="card-header bg-success text-white">
 
-        Medical Record
+<div class="card-header bg-success text-white">
+    Medical Records
+</div>
 
-    </div>
+<div class="card-body">
+
+    {% if medical_records %}
+
+        {% for record in medical_records %}
+
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex justify-content-between">
+                    <h5>
+                        Medical Record {{ forloop.counter }}
+                    </h5>
+
+                    <span class="text-muted">
+                        {{ record.visit_date }}
+                    </span>
+                </div>
+
+                <hr>
+
+                <p>
+                    <strong>Doctor:</strong>
+                    {{ record.doctor_name }}
+                </p>
+
+                <p>
+                    <strong>Department:</strong>
+                    {{ record.department }}
+                </p>
+
+                <p>
+                    <strong>Diagnosis:</strong>
+                    {{ record.diagnosis }}
+                </p>
+
+                <p>
+                    <strong>Symptoms:</strong>
+                    {{ record.symptoms }}
+                </p>
+
+                <p>
+                    <strong>Treatment:</strong>
+                    {{ record.treatment }}
+                </p>
+
+                <p>
+                    <strong>Prescription:</strong>
+                    {{ record.prescription }}
+                </p>
+
+                {% if record.next_visit %}
+                    <p>
+                        <strong>Next Visit:</strong>
+                        {{ record.next_visit }}
+                    </p>
+                {% endif %}
+
+                {% if record.remarks %}
+                    <p>
+                        <strong>Remarks:</strong>
+                        {{ record.remarks }}
+                    </p>
+                {% endif %}
+
+                {% if record.medical_report %}
+
+                    <a
+                        href="{{ record.medical_report.url }}"
+                        class="btn btn-outline-primary"
+                        target="_blank"
+                        download
+                    >
+                        <i class="bi bi-download"></i>
+                        Download Medical Report
+                    </a>
+
+                {% else %}
+
+                    <span class="text-muted">
+                        No medical document uploaded.
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="text-muted">
+            No medical records available for this patient.
+        </p>
+
+    {% endif %}
+
+</div>
 
 
-    <div class="card-body">
-
-        {% if medical_record %}
-
-            <p>
-
-                <strong>Doctor :</strong>
-
-                {{ medical_record.doctor_name }}
-
-            </p>
+</div>
 
 
-            <p>
 
-                <strong>Department :</strong>
+<!-- ===================================================== -->
 
-                {{ medical_record.department }}
+<!-- ALL BILLING DETAILS -->
 
-            </p>
+<!-- ===================================================== -->
 
+<div class="card shadow mb-4">
 
-            <p>
+```
+<div class="card-header bg-warning">
+    Billing Details
+</div>
 
-                <strong>Diagnosis :</strong>
+<div class="card-body">
 
-                {{ medical_record.diagnosis }}
+    {% if bills %}
 
-            </p>
+        {% for bill in bills %}
 
+            <div class="border rounded p-3 mb-3">
 
-            <p>
+                <h5>
+                    Bill {{ forloop.counter }}
+                </h5>
 
-                <strong>Symptoms :</strong>
+                <table class="table">
 
-                {{ medical_record.symptoms }}
+                    <tr>
+                        <th>Bill Number</th>
+                        <td>
+                            {{ bill.bill_number }}
+                        </td>
+                    </tr>
 
-            </p>
+                    <tr>
+                        <th>Bill Date</th>
+                        <td>
+                            {{ bill.bill_date }}
+                        </td>
+                    </tr>
 
+                    <tr>
+                        <th>Consultation Fee</th>
+                        <td>
+                            ₹ {{ bill.consultation_fee }}
+                        </td>
+                    </tr>
 
-            <p>
+                    <tr>
+                        <th>Medicine Fee</th>
+                        <td>
+                            ₹ {{ bill.medicine_fee }}
+                        </td>
+                    </tr>
 
-                <strong>Treatment :</strong>
+                    <tr>
+                        <th>Laboratory Fee</th>
+                        <td>
+                            ₹ {{ bill.laboratory_fee }}
+                        </td>
+                    </tr>
 
-                {{ medical_record.treatment }}
+                    <tr>
+                        <th>Other Charges</th>
+                        <td>
+                            ₹ {{ bill.other_charges }}
+                        </td>
+                    </tr>
 
-            </p>
+                    <tr>
+                        <th>Total Amount</th>
+                        <td>
+                            <strong>
+                                ₹ {{ bill.total_amount }}
+                            </strong>
+                        </td>
+                    </tr>
 
+                    <tr>
+                        <th>Payment Status</th>
+                        <td>
+                            {{ bill.payment_status }}
+                        </td>
+                    </tr>
 
-            <p>
+                    <tr>
+                        <th>Payment Method</th>
+                        <td>
+                            {{ bill.payment_method }}
+                        </td>
+                    </tr>
 
-                <strong>Prescription :</strong>
-
-                {{ medical_record.prescription }}
-
-            </p>
-
-
-            {% if medical_record.medical_report %}
+                </table>
 
                 <a
-                    href="{{ medical_record.medical_report.url }}"
-                    target="_blank"
-                    class="btn btn-outline-primary"
+                    href="{% url 'download_bill' bill.pk %}"
+                    class="btn btn-primary"
                 >
-
-                    <i class="bi bi-file-earmark-medical"></i>
-
-                    View Medical Report
-
+                    <i class="bi bi-file-pdf"></i>
+                    Download Bill PDF
                 </a>
 
-            {% endif %}
+            </div>
 
-        {% else %}
+        {% endfor %}
 
-            <p class="text-muted">
+    {% else %}
 
-                No medical record available.
+        <p class="text-muted">
+            No billing records available for this patient.
+        </p>
 
-            </p>
+    {% endif %}
 
-        {% endif %}
-
-    </div>
+</div>
+```
 
 </div>
 
-
-
-<!-- ===================================================== -->
-<!-- BILLING DETAILS -->
-<!-- ===================================================== -->
-
-<div class="card shadow mb-4">
-
-    <div class="card-header bg-warning">
-
-        Billing Details
-
-    </div>
-
-
-    <div class="card-body">
-
-        {% if bill %}
-
-            <table class="table">
-
-                <tr>
-
-                    <th>
-                        Bill Number
-                    </th>
-
-                    <td>
-                        {{ bill.bill_number }}
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <th>
-                        Total Amount
-                    </th>
-
-                    <td>
-                        ₹ {{ bill.total_amount }}
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <th>
-                        Bill Date
-                    </th>
-
-                    <td>
-                        {{ bill.bill_date }}
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <th>
-                        Payment Status
-                    </th>
-
-                    <td>
-                        {{ bill.payment_status }}
-                    </td>
-
-                </tr>
-
-            </table>
-
-
-            <a
-                href="{% url 'download_bill' bill.pk %}"
-                class="btn btn-primary"
-            >
-
-                <i class="bi bi-file-pdf"></i>
-
-                Download Bill
-
-            </a>
-
-        {% else %}
-
-            <p class="text-muted">
-
-                No bill available.
-
-            </p>
-
-        {% endif %}
-
-    </div>
-
-</div>
 
 
 
@@ -390,6 +407,30 @@ Claim Details
                 >
 
             </div>
+<!-- POLICY NUMBER -->
+
+<div class="mb-3">
+
+```
+<label
+    for="policy_number"
+    class="form-label fw-semibold"
+>
+    Policy Number
+</label>
+
+<input
+    type="text"
+    name="policy_number"
+    id="policy_number"
+    value="{{ claim.policy_number }}"
+    class="form-control"
+    placeholder="Enter policy number"
+    required
+>
+```
+
+</div>
 
 
 

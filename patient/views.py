@@ -11,7 +11,6 @@ from .models import (
     InsuranceCompany,
 )
 from .serializers import (
-    PatientSerializer,
     MedicalRecordSerializer,
     BillingSerializer,
 )
@@ -32,7 +31,6 @@ from .forms import (
     
 )
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
 from django.utils import timezone
 from django.db.models import Q, Sum, Exists, OuterRef
 from datetime import date
@@ -44,9 +42,9 @@ from decimal import Decimal, InvalidOperation
 from reportlab.lib.units import mm
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
-from django.http import HttpResponse
 from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
+
 
 class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patient.objects.all()
@@ -869,10 +867,15 @@ def insurance_profile(request):
             "company": company
         }
     )
+
 @login_required
 def insurance_claim_detail(request, pk):
 
-    insurance_company = get_logged_in_insurance_company(request)
+    insurance_company = get_object_or_404(
+        InsuranceCompany,
+        user=request.user,
+        status=True
+    )
 
     claim = get_object_or_404(
         InsuranceClaim.objects.select_related(
@@ -885,12 +888,35 @@ def insurance_claim_detail(request, pk):
         insurance_company=insurance_company
     )
 
+    patient = claim.patient
+
+    medical_records = (
+        MedicalRecord.objects
+        .filter(
+            patient=patient,
+            status=True
+        )
+        .order_by("-visit_date")
+    )
+
+    bills = (
+        Billing.objects
+        .filter(
+            medical_record__patient=patient
+        )
+        .select_related("medical_record")
+        .order_by("-bill_date")
+    )
+
     return render(
         request,
         "insurance/claim_detail.html",
         {
             "claim": claim,
+            "patient": patient,
             "insurance_company": insurance_company,
+            "medical_records": medical_records,
+            "bills": bills,
         }
     )
 @login_required
