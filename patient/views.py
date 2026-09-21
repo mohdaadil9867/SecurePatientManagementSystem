@@ -135,8 +135,7 @@ from rest_framework.decorators import api_view
 
 def patient_login(request):
 
-    if request.user.is_authenticated:
-        return redirect("patient_dashboard")
+
 
     if request.method == "POST":
 
@@ -155,21 +154,38 @@ def patient_login(request):
 
             return redirect("patient_dashboard")
 
-        else:
-
-            return render(
-                request,
-                "patient/login.html",
-                {
-                    "error": "Invalid Username or Password"
-                }
-            )
+     
 
     return render(
         request,
         "patient/login.html"
     )
+@login_required
+def patient_insurance_claims(request):
 
+    patient = get_object_or_404(
+        Patient,
+        user=request.user,
+        status=True
+    )
+
+    claims = InsuranceClaim.objects.filter(
+        patient=patient,
+        status=True
+    ).select_related(
+        "insurance_company",
+        "medical_record",
+        "bill"
+    )
+
+    return render(
+        request,
+        "patient/insurance_claims.html",
+        {
+            "patient": patient,
+            "claims": claims,
+        }
+    )
 
 @login_required
 def patient_dashboard(request):
@@ -600,40 +616,30 @@ def patient_billing(request):
 
 @login_required
 def patient_claims(request):
-
     patient = get_object_or_404(
-    Patient,
-    user=request.user
-)
+        Patient,
+        user=request.user
+    )
 
-    claims = InsuranceClaim.objects.filter(
-        patient=patient
+    claims = InsuranceClaim.objects.select_related(
+        "insurance_company",
+        "medical_record",
+        "bill"
+    ).filter(
+        patient=patient,
+        status=True
     ).order_by("-created_at")
-
-    total_claims = claims.count()
-
-    pending = claims.filter(
-        claim_status="Pending"
-    ).count()
-
-    approved = claims.filter(
-        claim_status="Approved"
-    ).count()
-
-    rejected = claims.filter(
-        claim_status="Rejected"
-    ).count()
 
     return render(
         request,
         "patient/claims.html",
         {
             "claims": claims,
-            "total_claims": total_claims,
-            "pending": pending,
-            "approved": approved,
-            "rejected": rejected,
-        },
+            "total_claims": claims.count(),
+            "pending": claims.filter(claim_status="Pending").count(),
+            "approved": claims.filter(claim_status="Approved").count(),
+            "rejected": claims.filter(claim_status="Rejected").count(),
+        }
     )
 @login_required
 def change_password(request):
@@ -679,8 +685,7 @@ def change_password(request):
 
 def insurance_login(request):
 
-    if request.user.is_authenticated:
-        return redirect("insurance_dashboard")
+    
 
     if request.method == "POST":
 
@@ -702,15 +707,7 @@ def insurance_login(request):
 
                 return redirect("insurance_dashboard")
 
-            else:
-
-                return render(
-                    request,
-                    "insurance/login.html",
-                    {
-                        "error": "You are not authorized to access the Insurance Portal."
-                    }
-                )
+            
 
         return render(
             request,
@@ -871,7 +868,7 @@ def insurance_profile(request):
 @login_required
 def insurance_claim_detail(request, pk):
 
-    insurance_company = get_object_or_404(
+    company = get_object_or_404(
         InsuranceCompany,
         user=request.user,
         status=True
@@ -880,43 +877,61 @@ def insurance_claim_detail(request, pk):
     claim = get_object_or_404(
         InsuranceClaim.objects.select_related(
             "patient",
-            "bill",
             "medical_record",
+            "bill",
             "insurance_company"
         ),
         pk=pk,
-        insurance_company=insurance_company
+        insurance_company=company
     )
 
-    patient = claim.patient
+    medical_records = MedicalRecord.objects.filter(
+        patient=claim.patient,
+        status=True
+    ).order_by("-visit_date")
 
-    medical_records = (
-        MedicalRecord.objects
-        .filter(
-            patient=patient,
-            status=True
+    bills = Billing.objects.filter(
+        medical_record__patient=claim.patient
+    ).order_by("-bill_date")
+
+    if request.method == "POST":
+
+        claim.claim_status = request.POST.get(
+            "claim_status"
         )
-        .order_by("-visit_date")
-    )
 
-    bills = (
-        Billing.objects
-        .filter(
-            medical_record__patient=patient
+        claim.approved_amount = (
+            request.POST.get("approved_amount") or 0
         )
-        .select_related("medical_record")
-        .order_by("-bill_date")
-    )
+
+        claim.remarks = request.POST.get(
+            "remarks",
+            ""
+        )
+
+        claim.save()
+
+        messages.success(
+            request,
+            "Claim decision updated successfully."
+        )
+
+        return redirect(
+            "insurance_claim_detail",
+            pk=claim.pk
+        )
 
     return render(
         request,
         "insurance/claim_detail.html",
         {
             "claim": claim,
-            "patient": patient,
-            "insurance_company": insurance_company,
+            "patient": claim.patient,
+            "medical_record": claim.medical_record,
             "medical_records": medical_records,
+            "bill": claim.bill,
             "bills": bills,
+            "insurance_company": company,
         }
     )
 @login_required
@@ -1239,9 +1254,7 @@ def insurance_notifications(request):
 
 def billing_login(request):
 
-    if request.user.is_authenticated:
-
-        return redirect("billing_dashboard")
+    
 
 
     if request.method == "POST":
@@ -2212,8 +2225,7 @@ def download_bill(request, pk):
 
 def doctor_login(request):
 
-    if request.user.is_authenticated:
-        return redirect("doctor_dashboard")
+   
 
     if request.method == "POST":
 
@@ -2627,8 +2639,7 @@ def hospital_patients(request):
     )
 def hospital_login(request):
 
-    if request.user.is_authenticated:
-        return redirect("hospital_dashboard")
+  
 
     if request.method == "POST":
 

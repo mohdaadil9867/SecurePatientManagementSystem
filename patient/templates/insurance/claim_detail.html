@@ -19,7 +19,7 @@ Claim Details
 
 <div class="card shadow mb-4">
 
-```
+
 <div class="card-header bg-primary text-white">
     Patient Information
 </div>
@@ -122,7 +122,7 @@ Claim Details
     </div>
 
 </div>
-```
+
 
 </div>
 
@@ -136,30 +136,19 @@ Claim Details
 
 <div class="card shadow mb-4">
 
+    <div class="card-header bg-success text-white">
+        Medical Records
+    </div>
 
-<div class="card-header bg-success text-white">
-    Medical Records
-</div>
-
-<div class="card-body">
-
-    {% if medical_records %}
+    <div class="card-body">
 
         {% for record in medical_records %}
 
             <div class="border rounded p-3 mb-3">
 
-                <div class="d-flex justify-content-between">
-                    <h5>
-                        Medical Record {{ forloop.counter }}
-                    </h5>
-
-                    <span class="text-muted">
-                        {{ record.visit_date }}
-                    </span>
-                </div>
-
-                <hr>
+                <h5>
+                    {{ record.visit_date }}
+                </h5>
 
                 <p>
                     <strong>Doctor:</strong>
@@ -191,54 +180,29 @@ Claim Details
                     {{ record.prescription }}
                 </p>
 
-                {% if record.next_visit %}
-                    <p>
-                        <strong>Next Visit:</strong>
-                        {{ record.next_visit }}
-                    </p>
-                {% endif %}
-
-                {% if record.remarks %}
-                    <p>
-                        <strong>Remarks:</strong>
-                        {{ record.remarks }}
-                    </p>
-                {% endif %}
-
                 {% if record.medical_report %}
 
-                    <a
-                        href="{{ record.medical_report.url }}"
-                        class="btn btn-outline-primary"
-                        target="_blank"
-                        download
-                    >
-                        <i class="bi bi-download"></i>
-                        Download Medical Report
+                    <a href="{{ record.medical_report.url }}"
+                       target="_blank"
+                       class="btn btn-primary">
+
+                        View / Download Medical Report
+
                     </a>
-
-                {% else %}
-
-                    <span class="text-muted">
-                        No medical document uploaded.
-                    </span>
 
                 {% endif %}
 
             </div>
 
+        {% empty %}
+
+            <p class="text-muted">
+                No medical records available for this patient.
+            </p>
+
         {% endfor %}
 
-    {% else %}
-
-        <p class="text-muted">
-            No medical records available for this patient.
-        </p>
-
-    {% endif %}
-
-</div>
-
+    </div>
 
 </div>
 
@@ -252,117 +216,146 @@ Claim Details
 
 <div class="card shadow mb-4">
 
-```
-<div class="card-header bg-warning">
-    Billing Details
-</div>
 
-<div class="card-body">
 
-    {% if bills %}
+
+</div><div class="card shadow mb-4">
+
+    <div class="card-header bg-warning">
+        Billing Details
+    </div>
+
+    <div class="card-body">
 
         {% for bill in bills %}
 
             <div class="border rounded p-3 mb-3">
 
+                <p>
+                    <strong>Bill Number:</strong>
+                    {{ bill.bill_number }}
+                </p>
+
+                <p>
+                    <strong>Bill Date:</strong>
+                    {{ bill.bill_date }}
+                </p>
+
+                <p>
+                    <strong>Consultation:</strong>
+                    ₹ {{ bill.consultation_fee }}
+                </p>
+
+                <p>
+                    <strong>Medicine:</strong>
+                    ₹ {{ bill.medicine_fee }}
+                </p>
+
+                <p>
+                    <strong>Laboratory:</strong>
+                    ₹ {{ bill.laboratory_fee }}
+                </p>
+
+                <p>
+                    <strong>Other Charges:</strong>
+                    ₹ {{ bill.other_charges }}
+                </p>
+
                 <h5>
-                    Bill {{ forloop.counter }}
+                    Total: ₹ {{ bill.total_amount }}
                 </h5>
 
-                <table class="table">
+                <p>
+                    <strong>Payment Status:</strong>
+                    {{ bill.payment_status }}
+                </p>
 
-                    <tr>
-                        <th>Bill Number</th>
-                        <td>
-                            {{ bill.bill_number }}
-                        </td>
-                    </tr>
+                <a href="{% url 'download_bill' bill.pk %}"
+                   class="btn btn-primary">
 
-                    <tr>
-                        <th>Bill Date</th>
-                        <td>
-                            {{ bill.bill_date }}
-                        </td>
-                    </tr>
+                    Download Bill
 
-                    <tr>
-                        <th>Consultation Fee</th>
-                        <td>
-                            ₹ {{ bill.consultation_fee }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Medicine Fee</th>
-                        <td>
-                            ₹ {{ bill.medicine_fee }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Laboratory Fee</th>
-                        <td>
-                            ₹ {{ bill.laboratory_fee }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Other Charges</th>
-                        <td>
-                            ₹ {{ bill.other_charges }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Total Amount</th>
-                        <td>
-                            <strong>
-                                ₹ {{ bill.total_amount }}
-                            </strong>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Payment Status</th>
-                        <td>
-                            {{ bill.payment_status }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Payment Method</th>
-                        <td>
-                            {{ bill.payment_method }}
-                        </td>
-                    </tr>
-
-                </table>
-
-                <a
-                    href="{% url 'download_bill' bill.pk %}"
-                    class="btn btn-primary"
-                >
-                    <i class="bi bi-file-pdf"></i>
-                    Download Bill PDF
                 </a>
 
             </div>
 
+        {% empty %}
+
+            <p class="text-muted">
+                No billing records available for this patient.
+            </p>
+
         {% endfor %}
 
-    {% else %}
+    </div>
 
-        <p class="text-muted">
-            No billing records available for this patient.
+</div>
+
+
+</div>
+
+<div class="card shadow mb-4">
+
+    <div class="card-header bg-primary text-white">
+        Insurance Details
+    </div>
+
+    <div class="card-body">
+
+        <p>
+            <strong>Insurance Company:</strong>
+            {{ claim.insurance_company.company_name }}
         </p>
 
-    {% endif %}
+        <p>
+            <strong>Policy Number:</strong>
+            {{ claim.policy_number }}
+        </p>
+
+        <p>
+            <strong>Claim Amount:</strong>
+            ₹ {{ claim.claim_amount }}
+        </p>
+
+        <p>
+            <strong>Current Status:</strong>
+
+            {% if claim.claim_status == "Approved" %}
+
+                <span class="badge bg-success">
+                    Approved
+                </span>
+
+            {% elif claim.claim_status == "Rejected" %}
+
+                <span class="badge bg-danger">
+                    Rejected
+                </span>
+
+            {% elif claim.claim_status == "Under Review" %}
+
+                <span class="badge bg-info">
+                    Under Review
+                </span>
+
+            {% else %}
+
+                <span class="badge bg-warning text-dark">
+                    Pending
+                </span>
+
+            {% endif %}
+
+        </p>
+
+        <p>
+            <strong>Approved Amount:</strong>
+            ₹ {{ claim.approved_amount }}
+        </p>
+
+    </div>
 
 </div>
-```
-
-</div>
-
 
 
 
@@ -411,7 +404,7 @@ Claim Details
 
 <div class="mb-3">
 
-```
+
 <label
     for="policy_number"
     class="form-label fw-semibold"
@@ -428,7 +421,7 @@ Claim Details
     placeholder="Enter policy number"
     required
 >
-```
+
 
 </div>
 
