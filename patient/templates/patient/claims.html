@@ -41,6 +41,7 @@ Insurance Claims
 
     </div>
 
+
     <!-- Summary Cards -->
 
     <div class="row mb-4">
@@ -61,6 +62,7 @@ Insurance Claims
 
         </div>
 
+
         <div class="col-md-3">
 
             <div class="card bg-warning text-dark shadow">
@@ -77,6 +79,7 @@ Insurance Claims
 
         </div>
 
+
         <div class="col-md-3">
 
             <div class="card bg-success text-white shadow">
@@ -92,6 +95,7 @@ Insurance Claims
             </div>
 
         </div>
+
 
         <div class="col-md-3">
 
@@ -111,20 +115,24 @@ Insurance Claims
 
     </div>
 
+
     <!-- Search -->
 
     <div class="card shadow-sm border-0 mb-4">
 
         <div class="card-body">
 
-            <input type="text"
-                   id="claimSearch"
-                   class="form-control"
-                   placeholder="Search Claim ID or Insurance Company">
+            <input
+                type="text"
+                id="claimSearch"
+                class="form-control"
+                placeholder="Search Claim ID or Insurance Company"
+            >
 
         </div>
 
     </div>
+
 
     <!-- Claims Table -->
 
@@ -136,11 +144,15 @@ Insurance Claims
 
         </div>
 
+
         <div class="card-body">
 
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle" id="claimTable">
+                <table
+                    class="table table-hover align-middle"
+                    id="claimTable"
+                >
 
                     <thead class="table-primary">
 
@@ -158,9 +170,12 @@ Insurance Claims
 
                         <th>Status</th>
 
+                        <th>Remarks</th>
+
                     </tr>
 
                     </thead>
+
 
                     <tbody>
 
@@ -168,15 +183,42 @@ Insurance Claims
 
                     <tr>
 
-                        <td>{{ claim.claim_id }}</td>
+                        <!-- Claim ID -->
 
-                        <td>{{ claim.insurance_company }}</td>
+                        <td>
+                            {{ claim.claim_id }}
+                        </td>
 
-                        <td>{{ claim.policy_number }}</td>
 
-                        <td>₹ {{ claim.claim_amount }}</td>
+                        <!-- Insurance Company -->
 
-                        <td>₹ {{ claim.approved_amount }}</td>
+                        <td>
+                            {{ claim.insurance_company }}
+                        </td>
+
+
+                        <!-- Policy -->
+
+                        <td>
+                            {{ claim.policy_number }}
+                        </td>
+
+
+                        <!-- Claim Amount -->
+
+                        <td>
+                            ₹ {{ claim.claim_amount }}
+                        </td>
+
+
+                        <!-- Approved Amount -->
+
+                        <td>
+                            ₹ {{ claim.approved_amount }}
+                        </td>
+
+
+                        <!-- Status -->
 
                         <td>
 
@@ -216,14 +258,58 @@ Insurance Claims
 
                         </td>
 
+
+                        <!-- Remarks -->
+
+                        <td>
+
+                            {% if claim.remarks %}
+
+                                <div
+                                    class="p-2"
+                                    style="
+                                        background:#f8f9fa;
+                                        border-left:4px solid #0d6efd;
+                                        border-radius:5px;
+                                        min-width:220px;
+                                    "
+                                >
+
+                                    <small class="text-muted">
+                                        Insurance Company:
+                                    </small>
+
+                                    <br>
+
+                                    <span>
+                                        {{ claim.remarks }}
+                                    </span>
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="text-muted">
+
+                                    No remarks yet.
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
                     </tr>
+
 
                     {% empty %}
 
                     <tr>
 
-                        <td colspan="6"
-                            class="text-center">
+                        <td
+                            colspan="7"
+                            class="text-center"
+                        >
 
                             No Insurance Claims Found
 
@@ -245,22 +331,36 @@ Insurance Claims
 
 </div>
 
+
+<!-- Search Script -->
+
 <script>
 
-document.getElementById("claimSearch").addEventListener("keyup",function(){
+document
+    .getElementById("claimSearch")
+    .addEventListener("keyup", function() {
 
-let value=this.value.toLowerCase();
+        let value = this.value.toLowerCase();
 
-let rows=document.querySelectorAll("#claimTable tbody tr");
+        let rows = document.querySelectorAll(
+            "#claimTable tbody tr"
+        );
 
-rows.forEach(function(row){
+        rows.forEach(function(row) {
 
-row.style.display=row.innerText.toLowerCase().includes(value) ? "" : "none";
+            row.style.display =
+                row.innerText
+                    .toLowerCase()
+                    .includes(value)
+                    ? ""
+                    : "none";
 
-});
+        });
 
-});
+    });
 
 </script>
 
+
 {% endblock %}
+

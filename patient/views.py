@@ -1,8 +1,35 @@
-from rest_framework import filters
-from rest_framework import viewsets
-from .serializers import PatientSerializer
-from .pagination import PatientPagination
-from rest_framework.permissions import IsAuthenticated
+from datetime import date
+
+from django.contrib import messages
+from django.contrib.auth import (
+    authenticate,
+    login,
+    logout,
+    update_session_auth_hash,
+)
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
+from django.db.models import Q, Exists, OuterRef
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+)
+from django.shortcuts import (
+    render,
+    redirect,
+    get_object_or_404,
+)
+from django.utils import timezone
+
+from rest_framework import filters, viewsets
+from rest_framework.permissions import DjangoModelPermissions
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
+
 from .models import (
     Patient,
     MedicalRecord,
@@ -10,77 +37,59 @@ from .models import (
     InsuranceClaim,
     InsuranceCompany,
 )
+
 from .serializers import (
+    PatientSerializer,
     MedicalRecordSerializer,
     BillingSerializer,
 )
-from rest_framework.permissions import DjangoModelPermissions
-from django.http import HttpResponse
-from .pdf import generate_bill_pdf
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
+
 from .forms import (
     InsuranceClaimForm,
     PatientPasswordChangeForm,
     BillingForm,
     MedicalRecordForm,
     PatientForm,
-    PatientInsuranceClaimForm,
-    
 )
-from django.contrib import messages
-from django.utils import timezone
-from django.db.models import Q, Sum, Exists, OuterRef
-from datetime import date
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from django.http import HttpResponseForbidden
-from django.core.exceptions import ValidationError
-from decimal import Decimal, InvalidOperation
-from reportlab.lib.units import mm
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
-from reportlab.lib import colors
-from reportlab.lib.colors import HexColor
+
+# =========================================================
+# REST API
+# =========================================================
 
 
 class PatientViewSet(viewsets.ModelViewSet):
+
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
     permission_classes = [DjangoModelPermissions]
 
-    # Search Fields
     search_fields = [
-        'patient_id',
-        'first_name',
-        'last_name',
-        'phone_number',
-        'email',
+        "patient_id",
+        "first_name",
+        "last_name",
+        "phone_number",
+        "email",
     ]
 
-    # Ordering Fields
     ordering_fields = [
-        'patient_id',
-        'first_name',
-        'last_name',
-        'created_at',
-        'date_of_birth',
+        "patient_id",
+        "first_name",
+        "last_name",
+        "created_at",
+        "date_of_birth",
     ]
 
-    # Default Ordering
-    ordering = ['patient_id'] 
+    ordering = ["patient_id"]
 
     def perform_destroy(self, instance):
-     instance.status = False
-     instance.save()
+
+        instance.status = False
+        instance.save()
+
 
 class MedicalRecordViewSet(viewsets.ModelViewSet):
 
-
     queryset = MedicalRecord.objects.filter(status=True)
-
     serializer_class = MedicalRecordSerializer
 
     filter_backends = [
@@ -106,10 +115,10 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
 
     ordering = ["-visit_date"]
 
+
 class BillingViewSet(viewsets.ModelViewSet):
 
     queryset = Billing.objects.all()
-
     serializer_class = BillingSerializer
 
     filter_backends = [
@@ -130,12 +139,70 @@ class BillingViewSet(viewsets.ModelViewSet):
 
     ordering = ["-bill_date"]
 
-from rest_framework.decorators import api_view
+
+# =========================================================
+# COMMON BILLING ACCESS HELPER
+# =========================================================
+#
+# Logic:
+#
+# 1. Patient assigned to Billing Staff 1
+#    -> Billing Staff 1 can access.
+#
+# 2. Patient assigned to Billing Staff 2
+#    -> Billing Staff 2 can access.
+#
+# 3. Patient has no billing staff assigned
+#    -> All Billing Staff can access.
+#
+# =========================================================
+
+
+def billing_access_q(user):
+
+    return (
+        Q(
+            medical_record__patient__assigned_billing_staff=user
+        )
+        |
+        Q(
+            medical_record__patient__assigned_billing_staff__isnull=True
+        )
+    )
+
+
+def billing_record_access_q(user):
+
+    return (
+        Q(
+            patient__assigned_billing_staff=user
+        )
+        |
+        Q(
+            patient__assigned_billing_staff__isnull=True
+        )
+    )
+
+
+# =========================================================
+# HOME
+# =========================================================
+
+
+def home(request):
+
+    return render(
+        request,
+        "home.html"
+    )
+
+
+# =========================================================
+# PATIENT PORTAL
+# =========================================================
 
 
 def patient_login(request):
-
-
 
     if request.method == "POST":
 
@@ -152,40 +219,20 @@ def patient_login(request):
 
             login(request, user)
 
-            return redirect("patient_dashboard")
+            return redirect(
+                "patient_dashboard"
+            )
 
-     
+        messages.error(
+            request,
+            "Invalid username or password."
+        )
 
     return render(
         request,
         "patient/login.html"
     )
-@login_required
-def patient_insurance_claims(request):
 
-    patient = get_object_or_404(
-        Patient,
-        user=request.user,
-        status=True
-    )
-
-    claims = InsuranceClaim.objects.filter(
-        patient=patient,
-        status=True
-    ).select_related(
-        "insurance_company",
-        "medical_record",
-        "bill"
-    )
-
-    return render(
-        request,
-        "patient/insurance_claims.html",
-        {
-            "patient": patient,
-            "claims": claims,
-        }
-    )
 
 @login_required
 def patient_dashboard(request):
@@ -209,7 +256,9 @@ def patient_dashboard(request):
 
     recent_records = MedicalRecord.objects.filter(
         patient=patient
-    ).order_by("-created_at")[:5]
+    ).order_by(
+        "-created_at"
+    )[:5]
 
     return render(
         request,
@@ -220,8 +269,9 @@ def patient_dashboard(request):
             "billing_count": billing_count,
             "claim_count": claim_count,
             "recent_records": recent_records,
-        },
+        }
     )
+
 
 @login_required
 def patient_profile(request):
@@ -238,6 +288,61 @@ def patient_profile(request):
             "patient": patient,
         }
     )
+
+
+@login_required
+def patient_medical_records(request):
+
+    patient = get_object_or_404(
+        Patient,
+        user=request.user
+    )
+
+    records = MedicalRecord.objects.filter(
+        patient=patient
+    ).order_by(
+        "-visit_date"
+    )
+
+    return render(
+        request,
+        "patient/medical_records.html",
+        {
+            "patient": patient,
+            "records": records,
+        }
+    )
+
+
+@login_required
+def patient_billing(request):
+
+    patient = get_object_or_404(
+        Patient,
+        user=request.user
+    )
+
+    bills = Billing.objects.filter(
+        medical_record__patient=patient
+    ).order_by(
+        "-bill_date"
+    )
+
+    return render(
+        request,
+        "patient/billing.html",
+        {
+            "patient": patient,
+            "bills": bills,
+        }
+    )
+
+
+# =========================================================
+# PATIENT BILL PDF
+# =========================================================
+
+
 @login_required
 def patient_download_bill(request, pk):
 
@@ -267,9 +372,10 @@ def patient_download_bill(request, pk):
 
     width, height = A4
 
-    # Header
-
-    pdf.setFont("Helvetica-Bold", 20)
+    pdf.setFont(
+        "Helvetica-Bold",
+        20
+    )
 
     pdf.drawString(
         50,
@@ -277,7 +383,10 @@ def patient_download_bill(request, pk):
         "SECURE PATIENT SYSTEM"
     )
 
-    pdf.setFont("Helvetica-Bold", 16)
+    pdf.setFont(
+        "Helvetica-Bold",
+        16
+    )
 
     pdf.drawString(
         50,
@@ -287,7 +396,10 @@ def patient_download_bill(request, pk):
 
     y = height - 150
 
-    pdf.setFont("Helvetica", 11)
+    pdf.setFont(
+        "Helvetica",
+        11
+    )
 
     pdf.drawString(
         50,
@@ -321,7 +433,10 @@ def patient_download_bill(request, pk):
 
     y -= 50
 
-    pdf.setFont("Helvetica-Bold", 12)
+    pdf.setFont(
+        "Helvetica-Bold",
+        12
+    )
 
     pdf.drawString(
         50,
@@ -331,7 +446,10 @@ def patient_download_bill(request, pk):
 
     y -= 30
 
-    pdf.setFont("Helvetica", 11)
+    pdf.setFont(
+        "Helvetica",
+        11
+    )
 
     pdf.drawString(
         70,
@@ -365,7 +483,10 @@ def patient_download_bill(request, pk):
 
     y -= 40
 
-    pdf.setFont("Helvetica-Bold", 14)
+    pdf.setFont(
+        "Helvetica-Bold",
+        14
+    )
 
     pdf.drawString(
         70,
@@ -375,7 +496,10 @@ def patient_download_bill(request, pk):
 
     y -= 35
 
-    pdf.setFont("Helvetica", 11)
+    pdf.setFont(
+        "Helvetica",
+        11
+    )
 
     pdf.drawString(
         70,
@@ -391,7 +515,10 @@ def patient_download_bill(request, pk):
         f"Payment Status: {bill.payment_status}"
     )
 
-    pdf.setFont("Helvetica-Oblique", 9)
+    pdf.setFont(
+        "Helvetica-Oblique",
+        9
+    )
 
     pdf.drawString(
         50,
@@ -402,61 +529,76 @@ def patient_download_bill(request, pk):
     pdf.save()
 
     return response
+
+
+# =========================================================
+# PATIENT INSURANCE CLAIMS
+# =========================================================
+
+
 @login_required
-def add_medical_record(request, patient_id):
+def patient_claims(request):
 
     patient = get_object_or_404(
         Patient,
-        id=patient_id
+        user=request.user
     )
 
-    if request.method == "POST":
-
-        form = MedicalRecordForm(request.POST, request.FILES)
-
-        if form.is_valid():
-
-            record = form.save(commit=False)
-
-            record.patient = patient
-            record.doctor = request.user
-
-            # Automatically take doctor name
-            record.doctor_name = (
-                request.user.get_full_name()
-                or request.user.username
-            )
-
-            record.save()
-
-            messages.success(
-                request,
-                "Medical record added successfully."
-            )
-
-            return redirect(
-                "doctor_patient_detail",
-                pk=patient.id
-            )
-
-    else:
-
-        form = MedicalRecordForm()
+    claims = InsuranceClaim.objects.select_related(
+        "insurance_company",
+        "medical_record",
+        "bill",
+    ).filter(
+        patient=patient,
+        status=True
+    ).order_by(
+        "-created_at"
+    )
 
     return render(
         request,
-        "doctor/add_record.html",
+        "patient/claims.html",
         {
-            "form": form,
-            "patient": patient,
+            "claims": claims,
+            "total_claims": claims.count(),
+            "pending": claims.filter(
+                claim_status="Pending"
+            ).count(),
+            "approved": claims.filter(
+                claim_status="Approved"
+            ).count(),
+            "rejected": claims.filter(
+                claim_status="Rejected"
+            ).count(),
         }
     )
+
+
 @login_required
-def insurance_dashboard(request):
+def patient_insurance_claims(request):
+
+    patient = get_object_or_404(
+        Patient,
+        user=request.user,
+        status=True
+    )
+
+    claims = InsuranceClaim.objects.filter(
+        patient=patient,
+        status=True,
+    ).select_related(
+        "insurance_company",
+        "medical_record",
+        "bill"
+    )
 
     return render(
         request,
-        "patient/insurance_dashboard.html"
+        "patient/insurance_claims.html",
+        {
+            "patient": patient,
+            "claims": claims,
+        }
     )
 
 
@@ -479,6 +621,7 @@ def my_insurance_claims(request):
             "claims": claims
         }
     )
+
 
 @login_required
 def apply_insurance_claim(request):
@@ -509,7 +652,9 @@ def apply_insurance_claim(request):
 
         if form.is_valid():
 
-            claim = form.save(commit=False)
+            claim = form.save(
+                commit=False
+            )
 
             claim.patient = patient
 
@@ -523,7 +668,9 @@ def apply_insurance_claim(request):
                 patient=patient
             )
 
-            bill_id = request.POST.get("bill")
+            bill_id = request.POST.get(
+                "bill"
+            )
 
             claim.bill = get_object_or_404(
                 Billing,
@@ -544,6 +691,7 @@ def apply_insurance_claim(request):
             claim.claim_status = "Pending"
             claim.approved_amount = 0
             claim.verified_date = None
+            claim.status = True
 
             claim.save()
 
@@ -552,11 +700,9 @@ def apply_insurance_claim(request):
                 "Insurance claim submitted successfully."
             )
 
-            return redirect("patient_claims")
-
-        else:
-
-            print("FORM ERRORS:", form.errors)
+            return redirect(
+                "patient_claims"
+            )
 
     else:
 
@@ -573,74 +719,12 @@ def apply_insurance_claim(request):
         }
     )
 
-@login_required
-def patient_logout(request):
-    logout(request)
-    return redirect("home")
 
-@login_required
-def patient_medical_records(request):
+# =========================================================
+# PATIENT PASSWORD / LOGOUT
+# =========================================================
 
-    patient = request.user.patient_profile
 
-    records = MedicalRecord.objects.filter(
-        patient=patient
-    ).order_by("-visit_date")
-
-    return render(
-        request,
-        "patient/medical_records.html",
-        {
-            "patient": patient,
-            "records": records,
-        }
-    )
-
-@login_required
-def patient_billing(request):
-
-    patient = request.user.patient_profile
-
-    bills = Billing.objects.filter(
-        medical_record__patient=patient
-    ).order_by("-bill_date")
-
-    return render(
-        request,
-        "patient/billing.html",
-        {
-            "patient": patient,
-            "bills": bills,
-        }
-    )
-
-@login_required
-def patient_claims(request):
-    patient = get_object_or_404(
-        Patient,
-        user=request.user
-    )
-
-    claims = InsuranceClaim.objects.select_related(
-        "insurance_company",
-        "medical_record",
-        "bill"
-    ).filter(
-        patient=patient,
-        status=True
-    ).order_by("-created_at")
-
-    return render(
-        request,
-        "patient/claims.html",
-        {
-            "claims": claims,
-            "total_claims": claims.count(),
-            "pending": claims.filter(claim_status="Pending").count(),
-            "approved": claims.filter(claim_status="Approved").count(),
-            "rejected": claims.filter(claim_status="Rejected").count(),
-        }
-    )
 @login_required
 def change_password(request):
 
@@ -665,7 +749,9 @@ def change_password(request):
                 "Password changed successfully."
             )
 
-            return redirect("patient_dashboard")
+            return redirect(
+                "patient_dashboard"
+            )
 
     else:
 
@@ -682,15 +768,32 @@ def change_password(request):
     )
 
 
+@login_required
+def patient_logout(request):
+
+    logout(request)
+
+    return redirect(
+        "home"
+    )
+
+
+# =========================================================
+# INSURANCE LOGIN
+# =========================================================
+
 
 def insurance_login(request):
 
-    
-
     if request.method == "POST":
 
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = request.POST.get(
+            "username"
+        )
+
+        password = request.POST.get(
+            "password"
+        )
 
         user = authenticate(
             request,
@@ -700,20 +803,25 @@ def insurance_login(request):
 
         if user is not None:
 
-            # Check whether user belongs to Insurance group
-            if user.groups.filter(name="Insurance").exists():
+            if user.groups.filter(
+                name="Insurance"
+            ).exists():
 
-                login(request, user)
+                login(
+                    request,
+                    user
+                )
 
-                return redirect("insurance_dashboard")
-
-            
+                return redirect(
+                    "insurance_dashboard"
+                )
 
         return render(
             request,
             "insurance/login.html",
             {
-                "error": "Invalid username or password."
+                "error":
+                "Invalid username or password."
             }
         )
 
@@ -721,16 +829,34 @@ def insurance_login(request):
         request,
         "insurance/login.html"
     )
+
+
+# =========================================================
+# INSURANCE HELPER
+# =========================================================
+
+
+def get_logged_in_insurance_company(request):
+
+    return get_object_or_404(
+        InsuranceCompany,
+        user=request.user
+    )
+
+
+# =========================================================
+# INSURANCE DASHBOARD
+# =========================================================
+
+
 @login_required
 def insurance_dashboard(request):
 
-    # Get the insurance company of the logged-in user
     company = get_object_or_404(
         InsuranceCompany,
         user=request.user
     )
 
-    # Only claims belonging to this insurance company
     claims = InsuranceClaim.objects.select_related(
         "patient",
         "medical_record",
@@ -738,10 +864,6 @@ def insurance_dashboard(request):
     ).filter(
         insurance_company=company
     )
-
-    # -----------------------------
-    # Claim Counts
-    # -----------------------------
 
     pending_claims = claims.filter(
         claim_status="Pending"
@@ -759,20 +881,11 @@ def insurance_dashboard(request):
         claim_status="Rejected"
     ).count()
 
-    # Total claims
     total_claims = claims.count()
-
-    # -----------------------------
-    # Recent Claims
-    # -----------------------------
 
     recent_claims = claims.order_by(
         "-created_at"
     )[:5]
-
-    # -----------------------------
-    # Notifications
-    # -----------------------------
 
     notifications = claims.filter(
         claim_status="Pending"
@@ -785,21 +898,28 @@ def insurance_dashboard(request):
         "insurance/dashboard.html",
         {
             "company": company,
-
             "total_claims": total_claims,
-
             "pending_claims": pending_claims,
             "under_review_claims": under_review_claims,
             "approved_claims": approved_claims,
             "rejected_claims": rejected_claims,
-
             "recent_claims": recent_claims,
             "notifications": notifications,
         }
     )
+
+
+# =========================================================
+# INSURANCE CLAIM LIST
+# =========================================================
+
+
+@login_required
 def insurance_claim_list(request):
 
-    insurance_company = get_logged_in_insurance_company(request)
+    insurance_company = (
+        get_logged_in_insurance_company(request)
+    )
 
     claims = InsuranceClaim.objects.select_related(
         "patient",
@@ -810,25 +930,49 @@ def insurance_claim_list(request):
         insurance_company=insurance_company
     )
 
-    search = request.GET.get("search", "").strip()
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
 
     if search:
+
         claims = claims.filter(
-            Q(claim_id__icontains=search)
-            | Q(patient__patient_id__icontains=search)
-            | Q(patient__first_name__icontains=search)
-            | Q(patient__last_name__icontains=search)
-            | Q(bill__bill_number__icontains=search)
+            Q(
+                claim_id__icontains=search
+            )
+            |
+            Q(
+                patient__patient_id__icontains=search
+            )
+            |
+            Q(
+                patient__first_name__icontains=search
+            )
+            |
+            Q(
+                patient__last_name__icontains=search
+            )
+            |
+            Q(
+                bill__bill_number__icontains=search
+            )
         )
 
-    status = request.GET.get("status", "").strip()
+    status = request.GET.get(
+        "status",
+        ""
+    ).strip()
 
     if status:
+
         claims = claims.filter(
             claim_status=status
         )
 
-    claims = claims.order_by("-created_at")
+    claims = claims.order_by(
+        "-created_at"
+    )
 
     return render(
         request,
@@ -840,30 +984,12 @@ def insurance_claim_list(request):
             "insurance_company": insurance_company,
         }
     )
-@login_required
-def insurance_profile(request):
 
-    company = InsuranceCompany.objects.filter(
-        user=request.user
-    ).first()
 
-    if not company:
-        return render(
-            request,
-            "insurance/profile.html",
-            {
-                "company": None,
-                "error": "No insurance company profile is linked to this account."
-            }
-        )
+# =========================================================
+# INSURANCE CLAIM DETAIL
+# =========================================================
 
-    return render(
-        request,
-        "insurance/profile.html",
-        {
-            "company": company
-        }
-    )
 
 @login_required
 def insurance_claim_detail(request, pk):
@@ -888,11 +1014,15 @@ def insurance_claim_detail(request, pk):
     medical_records = MedicalRecord.objects.filter(
         patient=claim.patient,
         status=True
-    ).order_by("-visit_date")
+    ).order_by(
+        "-visit_date"
+    )
 
     bills = Billing.objects.filter(
         medical_record__patient=claim.patient
-    ).order_by("-bill_date")
+    ).order_by(
+        "-bill_date"
+    )
 
     if request.method == "POST":
 
@@ -901,7 +1031,10 @@ def insurance_claim_detail(request, pk):
         )
 
         claim.approved_amount = (
-            request.POST.get("approved_amount") or 0
+            request.POST.get(
+                "approved_amount"
+            )
+            or 0
         )
 
         claim.remarks = request.POST.get(
@@ -934,10 +1067,19 @@ def insurance_claim_detail(request, pk):
             "insurance_company": company,
         }
     )
+
+
+# =========================================================
+# APPROVED CLAIMS
+# =========================================================
+
+
 @login_required
 def approved_claims(request):
 
-    insurance_company = get_logged_in_insurance_company(request)
+    insurance_company = (
+        get_logged_in_insurance_company(request)
+    )
 
     claims = InsuranceClaim.objects.select_related(
         "patient",
@@ -949,17 +1091,34 @@ def approved_claims(request):
         claim_status="Approved"
     )
 
-    search = request.GET.get("search", "").strip()
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
 
     if search:
+
         claims = claims.filter(
-            Q(claim_id__icontains=search)
-            | Q(patient__patient_id__icontains=search)
-            | Q(patient__first_name__icontains=search)
-            | Q(patient__last_name__icontains=search)
+            Q(
+                claim_id__icontains=search
+            )
+            |
+            Q(
+                patient__patient_id__icontains=search
+            )
+            |
+            Q(
+                patient__first_name__icontains=search
+            )
+            |
+            Q(
+                patient__last_name__icontains=search
+            )
         )
 
-    claims = claims.order_by("-created_at")
+    claims = claims.order_by(
+        "-created_at"
+    )
 
     return render(
         request,
@@ -971,10 +1130,19 @@ def approved_claims(request):
             "insurance_company": insurance_company,
         }
     )
+
+
+# =========================================================
+# REJECTED CLAIMS
+# =========================================================
+
+
 @login_required
 def rejected_claims(request):
 
-    insurance_company = get_logged_in_insurance_company(request)
+    insurance_company = (
+        get_logged_in_insurance_company(request)
+    )
 
     claims = InsuranceClaim.objects.select_related(
         "patient",
@@ -986,17 +1154,34 @@ def rejected_claims(request):
         claim_status="Rejected"
     )
 
-    search = request.GET.get("search", "").strip()
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
 
     if search:
+
         claims = claims.filter(
-            Q(claim_id__icontains=search)
-            | Q(patient__patient_id__icontains=search)
-            | Q(patient__first_name__icontains=search)
-            | Q(patient__last_name__icontains=search)
+            Q(
+                claim_id__icontains=search
+            )
+            |
+            Q(
+                patient__patient_id__icontains=search
+            )
+            |
+            Q(
+                patient__first_name__icontains=search
+            )
+            |
+            Q(
+                patient__last_name__icontains=search
+            )
         )
 
-    claims = claims.order_by("-created_at")
+    claims = claims.order_by(
+        "-created_at"
+    )
 
     return render(
         request,
@@ -1008,10 +1193,19 @@ def rejected_claims(request):
             "insurance_company": insurance_company,
         }
     )
+
+
+# =========================================================
+# INSURANCE REPORTS
+# =========================================================
+
+
 @login_required
 def insurance_reports(request):
 
-    insurance_company = get_logged_in_insurance_company(request)
+    insurance_company = (
+        get_logged_in_insurance_company(request)
+    )
 
     claims = InsuranceClaim.objects.filter(
         insurance_company=insurance_company
@@ -1036,11 +1230,13 @@ def insurance_reports(request):
     ).count()
 
     total_claim_amount = sum(
-        claim.claim_amount for claim in claims
+        claim.claim_amount
+        for claim in claims
     )
 
     total_approved_amount = sum(
-        claim.approved_amount for claim in claims
+        claim.approved_amount
+        for claim in claims
     )
 
     return render(
@@ -1058,104 +1254,39 @@ def insurance_reports(request):
         }
     )
 
+
+# =========================================================
+# INSURANCE PROFILE / PASSWORD / LOGOUT
+# =========================================================
+
+
 @login_required
-def apply_insurance_claim(request):
+def insurance_profile(request):
 
-    patient = get_object_or_404(
-        Patient,
+    company = InsuranceCompany.objects.filter(
         user=request.user
-    )
+    ).first()
 
-    medical_records = MedicalRecord.objects.filter(
-        patient=patient
-    )
+    if not company:
 
-    bills = Billing.objects.filter(
-        medical_record__patient=patient
-    )
-
-    companies = InsuranceCompany.objects.filter(
-        status=True
-    )
-
-    if request.method == "POST":
-
-        form = InsuranceClaimForm(
-            request.POST,
-            request.FILES
+        return render(
+            request,
+            "insurance/profile.html",
+            {
+                "company": None,
+                "error":
+                    "No insurance company profile is linked to this account."
+            }
         )
-
-        print("POST DATA:", request.POST)
-        print("FORM VALID:", form.is_valid())
-        print("FORM ERRORS:", form.errors)
-
-        if form.is_valid():
-
-            claim = form.save(commit=False)
-
-            claim.patient = patient
-
-            medical_record_id = request.POST.get(
-                "medical_record"
-            )
-
-            claim.medical_record = get_object_or_404(
-                MedicalRecord,
-                id=medical_record_id,
-                patient=patient
-            )
-
-            bill_id = request.POST.get("bill")
-
-            claim.bill = get_object_or_404(
-                Billing,
-                id=bill_id,
-                medical_record=claim.medical_record
-            )
-
-            insurance_company_id = request.POST.get(
-                "insurance_company"
-            )
-
-            claim.insurance_company = get_object_or_404(
-                InsuranceCompany,
-                id=insurance_company_id,
-                status=True
-            )
-
-            claim.claim_status = "Pending"
-            claim.approved_amount = 0
-            claim.verified_date = None
-            claim.status = True
-
-            claim.save()
-
-            messages.success(
-                request,
-                "Insurance claim submitted successfully."
-            )
-
-            return redirect("patient_claims")
-
-    else:
-
-        form = InsuranceClaimForm()
 
     return render(
         request,
-        "patient/apply_claim.html",
+        "insurance/profile.html",
         {
-            "form": form,
-            "medical_records": medical_records,
-            "bills": bills,
-            "companies": companies,
+            "company": company
         }
     )
-def get_logged_in_insurance_company(request):
-    return get_object_or_404(
-        InsuranceCompany,
-        user=request.user
-    )
+
 
 @login_required
 def insurance_change_password(request):
@@ -1183,7 +1314,7 @@ def insurance_change_password(request):
                 "insurance/change_password.html",
                 {
                     "error":
-                    "Current password is incorrect."
+                        "Current password is incorrect."
                 }
             )
 
@@ -1194,7 +1325,7 @@ def insurance_change_password(request):
                 "insurance/change_password.html",
                 {
                     "error":
-                    "New passwords do not match."
+                        "New passwords do not match."
                 }
             )
 
@@ -1205,7 +1336,7 @@ def insurance_change_password(request):
                 "insurance/change_password.html",
                 {
                     "error":
-                    "Password must contain at least 8 characters."
+                        "Password must contain at least 8 characters."
                 }
             )
 
@@ -1233,16 +1364,21 @@ def insurance_change_password(request):
         request,
         "insurance/change_password.html"
     )
-def insurance_logout(request):
-    logout(request)
-    return redirect("home")
+
 
 @login_required
 def insurance_notifications(request):
 
+    company = get_logged_in_insurance_company(
+        request
+    )
+
     notifications = InsuranceClaim.objects.filter(
+        insurance_company=company,
         claim_status="Pending"
-    ).order_by("-created_at")
+    ).order_by(
+        "-created_at"
+    )
 
     return render(
         request,
@@ -1252,17 +1388,32 @@ def insurance_notifications(request):
         }
     )
 
+
+def insurance_logout(request):
+
+    logout(request)
+
+    return redirect(
+        "home"
+    )
+
+
+# =========================================================
+# BILLING LOGIN
+# =========================================================
+
+
 def billing_login(request):
-
-    
-
 
     if request.method == "POST":
 
-        username = request.POST.get("username")
+        username = request.POST.get(
+            "username"
+        )
 
-        password = request.POST.get("password")
-
+        password = request.POST.get(
+            "password"
+        )
 
         user = authenticate(
             request,
@@ -1270,41 +1421,79 @@ def billing_login(request):
             password=password,
         )
 
+        if user is not None:
 
-        if user:
+            if user.groups.filter(
+                name="Billing Staff"
+            ).exists():
 
-            login(request, user)
+                login(
+                    request,
+                    user
+                )
 
-            return redirect("billing_dashboard")
+                return redirect(
+                    "billing_dashboard"
+                )
 
+            return render(
+                request,
+                "billing/login.html",
+                {
+                    "error":
+                        "You are not authorized as Billing Staff."
+                }
+            )
 
         return render(
             request,
             "billing/login.html",
             {
-                "error": "Invalid Username or Password"
+                "error":
+                    "Invalid Username or Password"
             }
         )
-
 
     return render(
         request,
         "billing/login.html"
     )
+
+
+# =========================================================
+# BILLING DASHBOARD
+# =========================================================
+
+
 @login_required
 def billing_dashboard(request):
 
-    total_bills = Billing.objects.count()
+    if not request.user.groups.filter(
+        name="Billing Staff"
+    ).exists():
 
-    paid = Billing.objects.filter(
+        return HttpResponseForbidden(
+            "You are not authorized to access Billing."
+        )
+
+    bills = Billing.objects.filter(
+        billing_access_q(request.user)
+    )
+
+    total_bills = bills.count()
+
+    paid = bills.filter(
         payment_status="Paid"
     ).count()
 
-    pending = Billing.objects.filter(
+    pending = bills.filter(
         payment_status="Pending"
     ).count()
 
-    recent_bills = Billing.objects.order_by(
+    recent_bills = bills.select_related(
+        "medical_record",
+        "medical_record__patient",
+    ).order_by(
         "-bill_date"
     )[:5]
 
@@ -1316,26 +1505,61 @@ def billing_dashboard(request):
             "paid": paid,
             "pending": pending,
             "recent_bills": recent_bills,
-        },
+        }
     )
+
+
+# =========================================================
+# BILLING LIST
+# =========================================================
+
+
 @login_required
 def billing_list(request):
 
-    bills = Billing.objects.select_related(
+    if not request.user.groups.filter(
+        name="Billing Staff"
+    ).exists():
+
+        return HttpResponseForbidden(
+            "You are not authorized to access Billing."
+        )
+
+    bills = Billing.objects.filter(
+        billing_access_q(request.user)
+    ).select_related(
         "medical_record",
         "medical_record__patient",
     )
 
-    query = request.GET.get("q")
+    query = request.GET.get(
+        "q",
+        ""
+    ).strip()
 
     if query:
 
         bills = bills.filter(
-            Q(bill_number__icontains=query) |
-            Q(medical_record__patient__patient_id__icontains=query)
+            Q(
+                bill_number__icontains=query
+            )
+            |
+            Q(
+                medical_record__patient__patient_id__icontains=query
+            )
+            |
+            Q(
+                medical_record__patient__first_name__icontains=query
+            )
+            |
+            Q(
+                medical_record__patient__last_name__icontains=query
+            )
         )
 
-    bills = bills.order_by("-bill_date")
+    bills = bills.order_by(
+        "-bill_date"
+    )
 
     return render(
         request,
@@ -1343,12 +1567,128 @@ def billing_list(request):
         {
             "bills": bills,
             "query": query,
+        }
+    )
+
+
+# =========================================================
+# CREATE BILL
+# =========================================================
+@login_required
+def create_bill(request):
+
+    # Only Billing Staff can access this page
+    if not request.user.groups.filter(
+        name="Billing Staff"
+    ).exists():
+
+        return HttpResponseForbidden(
+            "You are not authorized to create bills."
+        )
+
+    # --------------------------------------------------
+    # Medical records accessible to this billing staff
+    # --------------------------------------------------
+
+    accessible_records = MedicalRecord.objects.filter(
+        Q(
+            patient__assigned_billing_staff=request.user
+        )
+        |
+        Q(
+            patient__assigned_billing_staff__isnull=True
+        )
+    ).select_related(
+        "patient",
+        "doctor"
+    ).order_by(
+        "-visit_date"
+    )
+
+    if request.method == "POST":
+
+        form = BillingForm(
+            request.POST
+        )
+
+        # Only accessible medical records
+        form.fields[
+            "medical_record"
+        ].queryset = accessible_records
+
+        if form.is_valid():
+
+            bill = form.save(
+                commit=False
+            )
+
+            patient = bill.medical_record.patient
+
+            # --------------------------------------------------
+            # Security check
+            # --------------------------------------------------
+
+            if (
+                patient.assigned_billing_staff
+                and
+                patient.assigned_billing_staff != request.user
+            ):
+
+                return HttpResponseForbidden(
+                    "This patient is not assigned to your billing department."
+                )
+
+            bill.save()
+
+            messages.success(
+                request,
+                "Bill created successfully."
+            )
+
+            return redirect(
+                "billing_list"
+            )
+
+    else:
+
+        form = BillingForm()
+
+        form.fields[
+            "medical_record"
+        ].queryset = accessible_records
+
+    return render(
+        request,
+        "billing/create_bill.html",
+        {
+            "form": form,
+            "medical_records": accessible_records,
         },
     )
+
+
+
+# =========================================================
+# EDIT BILL
+# =========================================================
+
+
 @login_required
 def edit_bill(request, pk):
 
-    bill = get_object_or_404(Billing, pk=pk)
+    if not request.user.groups.filter(
+        name="Billing Staff"
+    ).exists():
+
+        return HttpResponseForbidden(
+            "You are not authorized to edit bills."
+        )
+
+    bill = get_object_or_404(
+        Billing,
+        billing_access_q(request.user),
+        pk=pk
+    )
 
     if request.method == "POST":
 
@@ -1366,10 +1706,9 @@ def edit_bill(request, pk):
                 "Bill updated successfully."
             )
 
-            return redirect("billing_list")
-
-        else:
-            print("BILL FORM ERRORS:", form.errors)
+            return redirect(
+                "billing_list"
+            )
 
     else:
 
@@ -1385,44 +1724,28 @@ def edit_bill(request, pk):
             "bill": bill,
         }
     )
-@login_required
-def billing_logout(request):
-    logout(request)
-    return redirect("home")
-@login_required
-def create_bill(request):
 
-    if request.method == "POST":
 
-        form = BillingForm(request.POST)
+# =========================================================
+# DELETE BILL
+# =========================================================
 
-        if form.is_valid():
 
-            form.save()
-
-            messages.success(
-                request,
-                "Bill created successfully."
-            )
-
-            return redirect("billing_list")
-
-    else:
-
-        form = BillingForm()
-
-    return render(
-        request,
-        "billing/create_bill.html",
-        {
-            "form": form,
-        },
-    )
 @login_required
 def delete_bill(request, pk):
 
+    if not request.user.groups.filter(
+        name="Billing Staff"
+    ).exists():
+
+        return HttpResponseForbidden(
+            "You are not authorized to delete bills."
+        )
+
     bill = get_object_or_404(
-        Billing,
+        Billing.objects.filter(
+         billing_access_q(request.user)
+        ),
         pk=pk
     )
 
@@ -1435,15 +1758,24 @@ def delete_bill(request, pk):
             "Bill deleted successfully."
         )
 
-        return redirect("billing_list")
+        return redirect(
+            "billing_list"
+        )
 
     return render(
         request,
         "billing/delete_bill.html",
         {
             "bill": bill,
-        },
+        }
     )
+
+
+# =========================================================
+# BILLING PROFILE / LOGOUT
+# =========================================================
+
+
 @login_required
 def billing_profile(request):
 
@@ -1452,23 +1784,24 @@ def billing_profile(request):
         "billing/profile.html",
         {
             "user": request.user,
-        },
+        }
     )
-today = timezone.now()
 
-monthly_revenue = Billing.objects.filter(
-    bill_date__month=today.month,
-    payment_status="Paid"
-).aggregate(
-    Sum("total_amount")
-)["total_amount__sum"] or 0
 
-today_revenue = Billing.objects.filter(
-    bill_date=today.date(),
-    payment_status="Paid"
-).aggregate(
-    Sum("total_amount")
-)["total_amount__sum"] or 0
+@login_required
+def billing_logout(request):
+
+    logout(request)
+
+    return redirect(
+        "home"
+    )
+
+
+# =========================================================
+# BILL PDF
+# =========================================================
+
 
 @login_required
 def download_bill(request, pk):
@@ -1510,10 +1843,12 @@ def download_bill(request, pk):
     white = colors.white
 
     # =====================================================
-    # PAGE BACKGROUND
+    # BACKGROUND
     # =====================================================
 
-    pdf.setFillColor(light_gray)
+    pdf.setFillColor(
+        light_gray
+    )
 
     pdf.rect(
         0,
@@ -1524,13 +1859,11 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    # =====================================================
-    # MAIN WHITE CONTAINER
-    # =====================================================
-
     margin = 35
 
-    pdf.setFillColor(white)
+    pdf.setFillColor(
+        white
+    )
 
     pdf.roundRect(
         margin,
@@ -1546,7 +1879,9 @@ def download_bill(request, pk):
     # HEADER
     # =====================================================
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.roundRect(
         margin,
@@ -1558,9 +1893,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    # Hospital icon circle
-
-    pdf.setFillColor(blue)
+    pdf.setFillColor(
+        blue
+    )
 
     pdf.circle(
         75,
@@ -1570,7 +1905,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    pdf.setFillColor(white)
+    pdf.setFillColor(
+        white
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1582,10 +1919,6 @@ def download_bill(request, pk):
         height - 101,
         "+"
     )
-
-    # System name
-
-    pdf.setFillColor(white)
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1609,8 +1942,6 @@ def download_bill(request, pk):
         "Secure Patient Data & Insurance Management System"
     )
 
-    # Medical Bill label
-
     pdf.setFont(
         "Helvetica-Bold",
         15
@@ -1628,7 +1959,9 @@ def download_bill(request, pk):
 
     y = height - 180
 
-    pdf.setFillColor(dark_gray)
+    pdf.setFillColor(
+        dark_gray
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1670,7 +2003,9 @@ def download_bill(request, pk):
 
     y -= 70
 
-    pdf.setFillColor(light_blue)
+    pdf.setFillColor(
+        light_blue
+    )
 
     pdf.roundRect(
         55,
@@ -1682,7 +2017,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1700,7 +2037,9 @@ def download_bill(request, pk):
         10
     )
 
-    pdf.setFillColor(dark_gray)
+    pdf.setFillColor(
+        dark_gray
+    )
 
     pdf.drawString(
         70,
@@ -1721,12 +2060,14 @@ def download_bill(request, pk):
     )
 
     # =====================================================
-    # MEDICAL RECORDS
+    # MEDICAL RECORD
     # =====================================================
 
     y -= 110
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1749,10 +2090,6 @@ def download_bill(request, pk):
         width - 55,
         y - 7
     )
-
-    # =====================================================
-    # GET MEDICAL RECORD INFORMATION
-    # =====================================================
 
     department_name = getattr(
         medical_record,
@@ -1786,10 +2123,6 @@ def download_bill(request, pk):
         None
     )
 
-    # =====================================================
-    # DIAGNOSIS / SYMPTOMS
-    # =====================================================
-
     if diagnosis and symptoms:
 
         diagnosis_symptoms = (
@@ -1813,10 +2146,6 @@ def download_bill(request, pk):
 
         diagnosis_symptoms = "N/A"
 
-    # =====================================================
-    # MEDICAL RECORD TABLE HEADER
-    # =====================================================
-
     table_y = y - 35
 
     pdf.setFillColor(
@@ -1833,7 +2162,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1858,10 +2189,6 @@ def download_bill(request, pk):
         "VISIT DATE"
     )
 
-    # =====================================================
-    # MEDICAL RECORD TABLE ROW
-    # =====================================================
-
     row_y = table_y - 28
 
     pdf.setFillColor(
@@ -1878,7 +2205,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    pdf.setFillColor(dark_gray)
+    pdf.setFillColor(
+        dark_gray
+    )
 
     pdf.setFont(
         "Helvetica",
@@ -1893,8 +2222,6 @@ def download_bill(request, pk):
         )[:18]
     )
 
-    # Diagnosis / Symptoms
-
     pdf.drawString(
         190,
         row_y + 2,
@@ -1902,8 +2229,6 @@ def download_bill(request, pk):
             diagnosis_symptoms
         )[:38]
     )
-
-    # Visit Date
 
     pdf.drawRightString(
         width - 70,
@@ -1919,7 +2244,9 @@ def download_bill(request, pk):
     # BILLING DETAILS
     # =====================================================
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1943,10 +2270,6 @@ def download_bill(request, pk):
         y - 7
     )
 
-    # =====================================================
-    # BILLING TABLE HEADER
-    # =====================================================
-
     table_y = y - 35
 
     pdf.setFillColor(
@@ -1962,7 +2285,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1980,10 +2305,6 @@ def download_bill(request, pk):
         table_y + 3,
         "AMOUNT"
     )
-
-    # =====================================================
-    # BILL ITEMS
-    # =====================================================
 
     items = [
         (
@@ -2028,7 +2349,9 @@ def download_bill(request, pk):
                 stroke=0
             )
 
-        pdf.setFillColor(dark_gray)
+        pdf.setFillColor(
+            dark_gray
+        )
 
         pdf.drawString(
             70,
@@ -2050,7 +2373,9 @@ def download_bill(request, pk):
 
     total_y = row_y - 5
 
-    pdf.setFillColor(light_blue)
+    pdf.setFillColor(
+        light_blue
+    )
 
     pdf.roundRect(
         55,
@@ -2062,7 +2387,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -2075,7 +2402,9 @@ def download_bill(request, pk):
         "TOTAL AMOUNT"
     )
 
-    pdf.setFillColor(blue)
+    pdf.setFillColor(
+        blue
+    )
 
     pdf.drawRightString(
         width - 70,
@@ -2089,7 +2418,9 @@ def download_bill(request, pk):
 
     payment_y = total_y - 65
 
-    pdf.setFillColor(navy)
+    pdf.setFillColor(
+        navy
+    )
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -2113,10 +2444,6 @@ def download_bill(request, pk):
         payment_y - 7
     )
 
-    # =====================================================
-    # PAYMENT BOX
-    # =====================================================
-
     box_y = payment_y - 58
 
     pdf.setFillColor(
@@ -2133,7 +2460,9 @@ def download_bill(request, pk):
         stroke=0
     )
 
-    pdf.setFillColor(dark_gray)
+    pdf.setFillColor(
+        dark_gray
+    )
 
     pdf.setFont(
         "Helvetica",
@@ -2153,33 +2482,6 @@ def download_bill(request, pk):
     )
 
     # =====================================================
-    # PAYMENT STATUS BADGE
-    # =====================================================
-
-    status = str(
-        bill.payment_status or ""
-    ).upper()
-
-    if status in ["PAID", "COMPLETED"]:
-
-        pdf.setFillColor(
-            HexColor("#D1E7DD")
-        )
-
-        pdf.setFillColor(green)
-
-    else:
-
-        pdf.setFillColor(
-            HexColor("#FFF3CD")
-        )
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        8
-    )
-
-    # =====================================================
     # FOOTER
     # =====================================================
 
@@ -2196,7 +2498,9 @@ def download_bill(request, pk):
         footer_y + 20
     )
 
-    pdf.setFillColor(gray)
+    pdf.setFillColor(
+        gray
+    )
 
     pdf.setFont(
         "Helvetica",
@@ -2215,22 +2519,27 @@ def download_bill(request, pk):
         "Secure Patient Data & Insurance Management System"
     )
 
-    # =====================================================
-    # SAVE PDF
-    # =====================================================
-
     pdf.save()
 
     return response
 
-def doctor_login(request):
 
-   
+# =========================================================
+# DOCTOR LOGIN
+# =========================================================
+
+
+def doctor_login(request):
 
     if request.method == "POST":
 
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = request.POST.get(
+            "username"
+        )
+
+        password = request.POST.get(
+            "password"
+        )
 
         user = authenticate(
             request,
@@ -2238,30 +2547,58 @@ def doctor_login(request):
             password=password,
         )
 
-        if user:
+        if user is not None:
 
-            login(request, user)
+            if user.groups.filter(
+                name="Doctor"
+            ).exists():
 
-            return redirect("doctor_dashboard")
+                login(
+                    request,
+                    user
+                )
+
+                return redirect(
+                    "doctor_dashboard"
+                )
+
+            return render(
+                request,
+                "doctor/login.html",
+                {
+                    "error":
+                        "You are not authorized as Doctor."
+                }
+            )
 
         return render(
             request,
             "doctor/login.html",
             {
-                "error": "Invalid Username or Password"
-            },
+                "error":
+                    "Invalid Username or Password"
+            }
         )
 
     return render(
         request,
         "doctor/login.html"
     )
+
+
+# =========================================================
+# DOCTOR DASHBOARD
+# =========================================================
+
+
 @login_required
 def doctor_dashboard(request):
 
     total_patients = MedicalRecord.objects.filter(
         doctor=request.user
-    ).values("patient").distinct().count()
+    ).values(
+        "patient"
+    ).distinct().count()
 
     total_records = MedicalRecord.objects.filter(
         doctor=request.user
@@ -2274,7 +2611,9 @@ def doctor_dashboard(request):
 
     recent_records = MedicalRecord.objects.filter(
         doctor=request.user
-    ).order_by("-visit_date")[:5]
+    ).order_by(
+        "-visit_date"
+    )[:5]
 
     return render(
         request,
@@ -2284,8 +2623,15 @@ def doctor_dashboard(request):
             "total_records": total_records,
             "today_visits": today_visits,
             "recent_records": recent_records,
-        },
+        }
     )
+
+
+# =========================================================
+# DOCTOR PATIENT LIST
+# =========================================================
+
+
 @login_required
 def doctor_patients(request):
 
@@ -2295,15 +2641,26 @@ def doctor_patients(request):
     ).strip()
 
     patients = Patient.objects.filter(
-        status=True
-    ).order_by("-created_at")
+        status=True,
+        assigned_doctor=request.user
+    ).order_by(
+        "-created_at"
+    )
 
     if search:
 
         patients = patients.filter(
-            Q(patient_id__icontains=search) |
-            Q(first_name__icontains=search) |
-            Q(last_name__icontains=search)
+            Q(
+                patient_id__icontains=search
+            )
+            |
+            Q(
+                first_name__icontains=search
+            )
+            |
+            Q(
+                last_name__icontains=search
+            )
         )
 
     patients = patients.annotate(
@@ -2322,8 +2679,30 @@ def doctor_patients(request):
             "search": search,
         }
     )
+
+
+# =========================================================
+# DOCTOR ADD PATIENT
+# =========================================================
+#
+# Doctor can select Billing Staff.
+#
+# If doctor selects Billing 1:
+#     only Billing 1 can access.
+#
+# If doctor does NOT select billing:
+#     all Billing Staff can access.
+#
+# =========================================================
+
+
 @login_required
 def doctor_add_patient(request):
+
+    billing_staff = User.objects.filter(
+        groups__name="Billing Staff",
+        is_active=True
+    ).distinct()
 
     if request.method == "POST":
 
@@ -2334,14 +2713,45 @@ def doctor_add_patient(request):
 
         if form.is_valid():
 
-            patient = form.save()
+            patient = form.save(
+                commit=False
+            )
+
+            patient.assigned_doctor = (
+                request.user
+            )
+
+            billing_id = request.POST.get(
+                "assigned_billing_staff"
+            )
+
+            if billing_id:
+
+                patient.assigned_billing_staff = (
+                    get_object_or_404(
+                        User,
+                        id=billing_id,
+                        groups__name="Billing Staff",
+                        is_active=True
+                    )
+                )
+
+            else:
+
+                # No billing staff selected.
+                # All Billing Staff can access.
+                patient.assigned_billing_staff = None
+
+            patient.save()
 
             messages.success(
                 request,
                 "Patient added successfully."
             )
 
-            return redirect("doctor_patients")
+            return redirect(
+                "doctor_patients"
+            )
 
     else:
 
@@ -2352,35 +2762,31 @@ def doctor_add_patient(request):
         "doctor/add_patient.html",
         {
             "form": form,
+            "billing_staff": billing_staff,
         }
     )
-@login_required
-def doctor_logout(request):
-    logout(request)
-    return redirect("home")
 
-@login_required
-def doctor_profile(request):
 
-    return render(
-        request,
-        "doctor/profile.html",
-        {
-            "doctor": request.user,
-        },
-    )
+# =========================================================
+# DOCTOR PATIENT DETAIL
+# =========================================================
+
+
 @login_required
 def doctor_patient_detail(request, pk):
 
     patient = get_object_or_404(
         Patient,
         pk=pk,
-        status=True
+        status=True,
+        assigned_doctor=request.user
     )
 
     records = MedicalRecord.objects.filter(
         patient=patient
-    ).order_by("-visit_date")
+    ).order_by(
+        "-visit_date"
+    )
 
     return render(
         request,
@@ -2390,13 +2796,21 @@ def doctor_patient_detail(request, pk):
             "records": records,
         }
     )
+
+
+# =========================================================
+# ADD MEDICAL RECORD
+# =========================================================
+
+
 @login_required
 def add_medical_record(request, patient_id):
 
     patient = get_object_or_404(
         Patient,
         pk=patient_id,
-        status=True
+        status=True,
+        assigned_doctor=request.user
     )
 
     if request.method == "POST":
@@ -2408,16 +2822,20 @@ def add_medical_record(request, patient_id):
 
         if form.is_valid():
 
-            record = form.save(commit=False)
+            record = form.save(
+                commit=False
+            )
 
+            # Patient automatically comes from URL.
             record.patient = patient
+
+            # Doctor automatically comes from login.
             record.doctor = request.user
 
-            if not record.doctor_name:
-                record.doctor_name = (
-                    request.user.get_full_name()
-                    or request.user.username
-                )
+            record.doctor_name = (
+                request.user.get_full_name()
+                or request.user.username
+            )
 
             record.save()
 
@@ -2447,14 +2865,161 @@ def add_medical_record(request, patient_id):
         {
             "form": form,
             "patient": patient,
-        },
+        }
     )
+
+
+# =========================================================
+# EDIT PATIENT
+# =========================================================
+
+
+@login_required
+def edit_patient(request, pk):
+
+    patient = get_object_or_404(
+        Patient,
+        pk=pk,
+        status=True
+    )
+
+    is_hospital = request.user.is_staff
+
+    is_doctor = request.user.groups.filter(
+        name="Doctor"
+    ).exists()
+
+    is_billing = request.user.groups.filter(
+        name="Billing Staff"
+    ).exists()
+
+    # Doctor can edit only assigned patients.
+    if is_doctor and not is_hospital:
+
+        if patient.assigned_doctor != request.user:
+
+            return HttpResponseForbidden(
+                "You are not authorized to edit this patient."
+            )
+
+    # Billing staff cannot edit patient information.
+    if is_billing and not is_hospital:
+
+        return HttpResponseForbidden(
+            "Billing staff cannot edit patient information."
+        )
+
+    doctors = User.objects.filter(
+        groups__name="Doctor",
+        is_active=True
+    ).distinct()
+
+    billing_staff = User.objects.filter(
+        groups__name="Billing Staff",
+        is_active=True
+    ).distinct()
+
+    if request.method == "POST":
+
+        form = PatientForm(
+            request.POST,
+            request.FILES,
+            instance=patient
+        )
+
+        if form.is_valid():
+
+            patient = form.save(
+                commit=False
+            )
+
+            # Only Hospital Admin can change assignments.
+            if is_hospital:
+
+                doctor_id = request.POST.get(
+                    "assigned_doctor"
+                )
+
+                billing_id = request.POST.get(
+                    "assigned_billing_staff"
+                )
+
+                if doctor_id:
+
+                    patient.assigned_doctor = (
+                        get_object_or_404(
+                            User,
+                            id=doctor_id,
+                            groups__name="Doctor",
+                            is_active=True
+                        )
+                    )
+
+                if billing_id:
+
+                    patient.assigned_billing_staff = (
+                        get_object_or_404(
+                            User,
+                            id=billing_id,
+                            groups__name="Billing Staff",
+                            is_active=True
+                        )
+                    )
+
+                else:
+
+                    # No billing staff = all billing staff
+                    # can access.
+                    patient.assigned_billing_staff = None
+
+            patient.save()
+
+            messages.success(
+                request,
+                "Patient information updated successfully."
+            )
+
+            if is_doctor:
+
+                return redirect(
+                    "doctor_patient_detail",
+                    pk=patient.pk
+                )
+
+            return redirect(
+                "hospital_patients"
+            )
+
+    else:
+
+        form = PatientForm(
+            instance=patient
+        )
+
+    return render(
+        request,
+        "hospital/edit_patient.html",
+        {
+            "form": form,
+            "patient": patient,
+            "doctors": doctors,
+            "billing_staff": billing_staff,
+        }
+    )
+
+
+# =========================================================
+# EDIT MEDICAL RECORD
+# =========================================================
+
+
 @login_required
 def edit_medical_record(request, pk):
 
     record = get_object_or_404(
         MedicalRecord,
-        pk=pk
+        pk=pk,
+        patient__assigned_doctor=request.user
     )
 
     if request.method == "POST":
@@ -2467,7 +3032,9 @@ def edit_medical_record(request, pk):
 
         if form.is_valid():
 
-            record = form.save(commit=False)
+            record = form.save(
+                commit=False
+            )
 
             record.doctor = request.user
 
@@ -2502,13 +3069,20 @@ def edit_medical_record(request, pk):
             "record": record,
         }
     )
+
+
+# =========================================================
+# DELETE MEDICAL RECORD
+# =========================================================
+
+
 @login_required
 def delete_medical_record(request, pk):
 
     record = get_object_or_404(
         MedicalRecord,
         pk=pk,
-        doctor=request.user,
+        doctor=request.user
     )
 
     patient_id = record.patient.id
@@ -2522,28 +3096,41 @@ def delete_medical_record(request, pk):
 
     return redirect(
         "doctor_patient_detail",
-        pk=patient_id,
+        pk=patient_id
     )
+
+
+# =========================================================
+# DOCTOR OTHER PAGES
+# =========================================================
+
+
 @login_required
 def doctor_appointments(request):
 
     appointments = MedicalRecord.objects.filter(
         doctor=request.user
-    ).order_by("-visit_date")
+    ).order_by(
+        "-visit_date"
+    )
 
     return render(
         request,
         "doctor/appointments.html",
         {
             "appointments": appointments,
-        },
+        }
     )
+
+
 @login_required
 def doctor_reports(request):
 
     total_patients = MedicalRecord.objects.filter(
         doctor=request.user
-    ).values("patient").distinct().count()
+    ).values(
+        "patient"
+    ).distinct().count()
 
     total_visits = MedicalRecord.objects.filter(
         doctor=request.user
@@ -2555,22 +3142,30 @@ def doctor_reports(request):
         {
             "total_patients": total_patients,
             "total_visits": total_visits,
-        },
+        }
     )
+
+
 @login_required
 def doctor_records(request):
 
     records = MedicalRecord.objects.filter(
         doctor=request.user
-    ).select_related("patient").order_by("-visit_date")
+    ).select_related(
+        "patient"
+    ).order_by(
+        "-visit_date"
+    )
 
     return render(
         request,
         "doctor/records.html",
         {
             "records": records,
-        },
+        }
     )
+
+
 @login_required
 def doctor_prescriptions(request):
 
@@ -2578,7 +3173,9 @@ def doctor_prescriptions(request):
         doctor=request.user
     ).select_related(
         "patient"
-    ).order_by("-visit_date")
+    ).order_by(
+        "-visit_date"
+    )
 
     return render(
         request,
@@ -2587,6 +3184,8 @@ def doctor_prescriptions(request):
             "records": records,
         }
     )
+
+
 @login_required
 def doctor_change_password(request):
 
@@ -2611,7 +3210,9 @@ def doctor_change_password(request):
                 "Password changed successfully."
             )
 
-            return redirect("doctor_dashboard")
+            return redirect(
+                "doctor_dashboard"
+            )
 
     else:
 
@@ -2626,25 +3227,46 @@ def doctor_change_password(request):
             "form": form
         }
     )
+
+
 @login_required
-def hospital_patients(request):
-    patients = Patient.objects.all().order_by("-created_at")
+def doctor_logout(request):
+
+    logout(request)
+
+    return redirect(
+        "home"
+    )
+
+
+@login_required
+def doctor_profile(request):
 
     return render(
         request,
-        "hospital/patients.html",
+        "doctor/profile.html",
         {
-            "patients": patients,
+            "doctor": request.user,
         }
     )
-def hospital_login(request):
 
-  
+
+# =========================================================
+# HOSPITAL / RECEPTION
+# =========================================================
+
+
+def hospital_login(request):
 
     if request.method == "POST":
 
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = request.POST.get(
+            "username"
+        )
+
+        password = request.POST.get(
+            "password"
+        )
 
         user = authenticate(
             request,
@@ -2654,19 +3276,21 @@ def hospital_login(request):
 
         if user is not None:
 
-            # Only Hospital Admin can enter this portal
             if user.is_staff:
 
-                login(request, user)
-
-                return redirect("hospital_dashboard")
-
-            else:
-
-                messages.error(
+                login(
                     request,
-                    "You are not authorized as Hospital Admin."
+                    user
                 )
+
+                return redirect(
+                    "hospital_dashboard"
+                )
+
+            messages.error(
+                request,
+                "You are not authorized as Hospital Admin."
+            )
 
         else:
 
@@ -2679,6 +3303,8 @@ def hospital_login(request):
         request,
         "hospital/login.html"
     )
+
+
 @login_required
 def hospital_dashboard(request):
 
@@ -2708,23 +3334,94 @@ def hospital_dashboard(request):
             "recent_patients": recent_patients,
         }
     )
+
+
+@login_required
+def hospital_patients(request):
+
+    patients = Patient.objects.all().order_by(
+        "-created_at"
+    )
+
+    return render(
+        request,
+        "hospital/patients.html",
+        {
+            "patients": patients,
+        }
+    )
+
+
+# =========================================================
+# HOSPITAL ADD PATIENT
+# =========================================================
+
+
 @login_required
 def hospital_add_patient(request):
 
+    doctors = User.objects.filter(
+        groups__name="Doctor",
+        is_active=True
+    ).distinct()
+
+    billing_staff = User.objects.filter(
+        groups__name="Billing Staff",
+        is_active=True
+    ).distinct()
+
     if request.method == "POST":
-        form = PatientForm(request.POST, request.FILES)
+
+        form = PatientForm(
+            request.POST,
+            request.FILES
+        )
 
         if form.is_valid():
-            form.save()
+
+            patient = form.save(
+                commit=False
+            )
+
+            doctor_id = request.POST.get(
+                "assigned_doctor"
+            )
+
+            billing_id = request.POST.get(
+                "assigned_billing_staff"
+            )
+
+            patient.assigned_doctor = (
+                get_object_or_404(
+                    User,
+                    id=doctor_id,
+                    groups__name="Doctor",
+                    is_active=True
+                )
+            )
+
+            patient.assigned_billing_staff = (
+                get_object_or_404(
+                    User,
+                    id=billing_id,
+                    groups__name="Billing Staff",
+                    is_active=True
+                )
+            )
+
+            patient.save()
 
             messages.success(
                 request,
-                "Patient added successfully."
+                "Patient registered and assigned successfully."
             )
 
-            return redirect("hospital_patients")
+            return redirect(
+                "hospital_patients"
+            )
 
     else:
+
         form = PatientForm()
 
     return render(
@@ -2732,11 +3429,18 @@ def hospital_add_patient(request):
         "hospital/add_patient.html",
         {
             "form": form,
+            "doctors": doctors,
+            "billing_staff": billing_staff,
         }
     )
-def hospital_logout(request):
-    logout(request)
-    return redirect("home")
 
-def home(request):
-    return render(request, "home.html")
+
+@login_required
+def hospital_logout(request):
+
+    logout(request)
+
+    return redirect(
+        "home"
+    )
+

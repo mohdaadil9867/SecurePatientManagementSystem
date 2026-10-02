@@ -212,6 +212,63 @@ Add Patient
                         Upload JPG, JPEG or PNG image.
                     </div>
 
+                    <div class="mb-3">
+
+    <label class="form-label">
+        Assign Doctor
+    </label>
+
+    <select
+        name="assigned_doctor"
+        class="form-control"
+        required
+    >
+
+        <option value="">
+            Select Doctor
+        </option>
+
+        {% for doctor in doctors %}
+
+            <option value="{{ doctor.id }}">
+                {{ doctor.get_full_name|default:doctor.username }}
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+</div>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+        Assign Billing Staff
+    </label>
+
+    <select
+        name="assigned_billing_staff"
+        class="form-control"
+        required
+    >
+
+        <option value="">
+            Select Billing Staff
+        </option>
+
+        {% for staff in billing_staff %}
+
+            <option value="{{ staff.id }}">
+                {{ staff.get_full_name|default:staff.username }}
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+</div>
+
                 </div>
 
 

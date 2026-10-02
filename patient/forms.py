@@ -152,8 +152,6 @@ class MedicalRecordForm(forms.ModelForm):
         model = MedicalRecord
 
         fields = [
-            "patient",
-            "doctor",
             "doctor_name",
             "department",
             "diagnosis",
@@ -169,20 +167,15 @@ class MedicalRecordForm(forms.ModelForm):
 
         widgets = {
 
-            "patient": forms.Select(
-                attrs={"class": "form-select"}
-            ),
-
-            "doctor": forms.Select(
-                attrs={"class": "form-select"}
-            ),
-
             "doctor_name": forms.TextInput(
-                attrs={"class": "form-control"}
+                attrs={"class": "form-control",
+                "readonly" : True,
+        }
             ),
 
             "department": forms.TextInput(
-                attrs={"class": "form-control"}
+                attrs={"class": "form-control",
+                       "rows": 3,}
             ),
 
             "diagnosis": forms.Textarea(
@@ -329,6 +322,7 @@ class InsuranceClaimForm(forms.ModelForm):
             "policy_number",
             "claim_amount",
             "reason",
+            "remarks",
             "supporting_document",
         ]
 
@@ -368,6 +362,13 @@ class InsuranceClaimForm(forms.ModelForm):
                     "placeholder": "Enter claim reason"
                 }
             ),
+            "remarks": forms.Textarea(
+                 attrs={ 
+                     "class": "form-control", 
+                     "rows": 3, 
+                     "placeholder": "Additional remarks", 
+                     } 
+                    ),
 
             "supporting_document": forms.ClearableFileInput(
                 attrs={"class": "form-control"}

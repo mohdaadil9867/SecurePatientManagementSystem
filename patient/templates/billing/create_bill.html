@@ -1,4 +1,5 @@
-{% extends 'billing/base.html' %}
+
+{% extends "billing/base.html" %}
 
 {% block title %}
 Create Bill
@@ -6,272 +7,237 @@ Create Bill
 
 {% block content %}
 
-<div class="card shadow-lg">
+<div class="container-fluid">
 
-    <div class="card-header bg-success text-white">
-        <h3>Create New Bill</h3>
+    <!-- Page Header -->
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+
+            <i class="bi bi-receipt text-primary"></i>
+
+            Generate Medical Bill
+
+        </h2>
+
+        <p class="text-muted">
+
+            Review the patient's medical record and generate the bill.
+
+        </p>
+
     </div>
 
-    <div class="card-body">
 
-        <form method="POST">
+    <!-- Medical Records -->
 
-            {% csrf_token %}
+    <div class="card shadow border-0 mb-4">
 
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    <strong>Please correct the following errors:</strong>
+        <div class="card-header bg-primary text-white">
 
-                    {{ form.non_field_errors }}
+            <h5 class="mb-0">
 
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <div>
-                                <strong>{{ field.label }}:</strong>
-                                {{ error }}
-                            </div>
+                <i class="bi bi-file-medical"></i>
+
+                Patient Medical Records
+
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-primary">
+
+                        <tr>
+
+                            <th>Patient ID</th>
+
+                            <th>Patient Name</th>
+
+                            <th>Diagnosis</th>
+
+                            <th>Treatment</th>
+
+                            <th>Visit Date</th>
+
+                            <th>Medical Report</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for record in medical_records %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ record.patient.patient_id }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ record.patient.first_name }}
+
+                                {{ record.patient.last_name }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ record.diagnosis|default:"-" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ record.treatment|default:"-" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ record.visit_date|date:"d M Y" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if record.medical_report %}
+
+                                    <a href="{{ record.medical_report.url }}"
+                                       target="_blank"
+                                       class="btn btn-sm btn-primary">
+
+                                        <i class="bi bi-eye"></i>
+
+                                        View
+
+                                    </a>
+
+
+                                    <a href="{{ record.medical_report.url }}"
+                                       download
+                                       class="btn btn-sm btn-success">
+
+                                        <i class="bi bi-download"></i>
+
+                                        Download
+
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+
+                                        No Report
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="6"
+                                class="text-center text-muted py-4">
+
+                                No medical records available.
+
+                            </td>
+
+                        </tr>
+
                         {% endfor %}
-                    {% endfor %}
-                </div>
-            {% endif %}
 
+                    </tbody>
 
-            <!-- Medical Record + Consultation -->
-
-            <div class="row">
-
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        Medical Record
-                    </label>
-
-                    {{ form.medical_record }}
-
-                </div>
-
-
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        Consultation Fee
-                    </label>
-
-                    {{ form.consultation_fee }}
-
-                </div>
+                </table>
 
             </div>
 
+        </div>
 
-            <br>
-
-
-            <!-- Medicine + Laboratory -->
-
-            <div class="row">
-
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        Medicine Fee
-                    </label>
-
-                    {{ form.medicine_fee }}
-
-                </div>
+    </div>
 
 
-                <div class="col-md-6">
+    <!-- Generate Bill -->
 
-                    <label class="form-label">
-                        Laboratory Fee
-                    </label>
+    <div class="card shadow border-0">
 
-                    {{ form.laboratory_fee }}
+        <div class="card-header bg-success text-white">
 
-                </div>
+            <h5 class="mb-0">
 
-            </div>
+                <i class="bi bi-receipt-cutoff"></i>
 
+                Generate Bill
 
-            <br>
+            </h5>
 
-
-            <!-- Other + Total -->
-
-            <div class="row">
-
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        Other Charges
-                    </label>
-
-                    {{ form.other_charges }}
-
-                </div>
+        </div>
 
 
-                <div class="col-md-6">
+        <div class="card-body">
 
-                    <label class="form-label">
-                        Total Amount
-                    </label>
+            <form method="POST">
 
-                    <input
-                        type="text"
-                        id="totalAmount"
-                        class="form-control"
-                        readonly
-                    >
+                {% csrf_token %}
+
+                {{ form.as_p }}
+
+
+                <div class="mt-3">
+
+                    <button type="submit"
+                            class="btn btn-success">
+
+                        <i class="bi bi-check-circle"></i>
+
+                        Generate Bill
+
+                    </button>
+
+
+                    <a href="{% url 'billing_list' %}"
+                       class="btn btn-secondary">
+
+                        <i class="bi bi-arrow-left"></i>
+
+                        Cancel
+
+                    </a>
 
                 </div>
 
-            </div>
+            </form>
 
-
-            <br>
-
-
-            <!-- Payment Method + Status -->
-
-            <div class="row">
-
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        Payment Method
-                    </label>
-
-                    {{ form.payment_method }}
-
-                </div>
-
-
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        Payment Status
-                    </label>
-
-                    {{ form.payment_status }}
-
-                </div>
-
-            </div>
-
-
-            <br>
-
-
-            <!-- BILL DATE -->
-
-            <div class="row">
-
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        Bill Date
-                    </label>
-
-                    {{ form.bill_date }}
-
-                </div>
-
-            </div>
-
-
-            <br>
-
-
-            <!-- Buttons -->
-
-            <div class="text-end">
-
-                <button
-                    type="submit"
-                    class="btn btn-success"
-                >
-                    Save Bill
-                </button>
-
-
-                <a
-                    href="{% url 'billing_list' %}"
-                    class="btn btn-secondary"
-                >
-                    Cancel
-                </a>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
 
 </div>
 
-
-<script>
-
-function calculateTotal() {
-
-    let consultation =
-        parseFloat(
-            document.getElementById("id_consultation_fee").value
-        ) || 0;
-
-    let medicine =
-        parseFloat(
-            document.getElementById("id_medicine_fee").value
-        ) || 0;
-
-    let laboratory =
-        parseFloat(
-            document.getElementById("id_laboratory_fee").value
-        ) || 0;
-
-    let other =
-        parseFloat(
-            document.getElementById("id_other_charges").value
-        ) || 0;
-
-
-    let total =
-        consultation +
-        medicine +
-        laboratory +
-        other;
-
-
-    document.getElementById("totalAmount").value =
-        "₹ " + total.toFixed(2);
-}
-
-
-document
-    .getElementById("id_consultation_fee")
-    .addEventListener("input", calculateTotal);
-
-
-document
-    .getElementById("id_medicine_fee")
-    .addEventListener("input", calculateTotal);
-
-
-document
-    .getElementById("id_laboratory_fee")
-    .addEventListener("input", calculateTotal);
-
-
-document
-    .getElementById("id_other_charges")
-    .addEventListener("input", calculateTotal);
-
-
-calculateTotal();
-
-</script>
-
 {% endblock %}
+

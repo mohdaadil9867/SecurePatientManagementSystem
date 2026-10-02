@@ -2,15 +2,15 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth.models import User
+
 from .validators import (
     validate_name,
     validate_phone,
     validate_date_of_birth,
 )
+
 from .utils import generate_patient_id
 from .managers import ActivePatientManager
-from django.contrib.auth.models import User
-
 
 class Patient(models.Model):
 
@@ -83,10 +83,11 @@ class Patient(models.Model):
     address = models.TextField()
 
     profile_photo = models.ImageField(
-    upload_to="patient_photos/",
-    blank=True,
-    null=True
-)
+        upload_to="patient_photos/",
+        blank=True,
+        null=True
+    )
+
     status = models.BooleanField(
         default=True
     )
@@ -98,8 +99,22 @@ class Patient(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True
     )
-    def __str__(self):
-        return f"{self.patient_id} - {self.first_name} {self.last_name}"
+
+    assigned_doctor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_patients",
+    )
+
+    assigned_billing_staff = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="billing_patients",
+    )
 
     class Meta:
         permissions = [
@@ -157,16 +172,10 @@ class Patient(models.Model):
 
     def save(self, *args, **kwargs):
 
-        # --------------------------------
         # 1. Save patient first
-        # --------------------------------
-
         super().save(*args, **kwargs)
 
-        # --------------------------------
         # 2. Generate Patient ID
-        # --------------------------------
-
         if not self.patient_id:
 
             self.patient_id = f"PAT{self.pk:04d}"
@@ -177,10 +186,7 @@ class Patient(models.Model):
                 patient_id=self.patient_id
             )
 
-        # --------------------------------
         # 3. Create patient login account
-        # --------------------------------
-
         if self.user_id is None:
 
             user = User.objects.create_user(
@@ -191,19 +197,15 @@ class Patient(models.Model):
                 email=self.email,
             )
 
+            self.user = user
+
             Patient.objects.filter(
                 pk=self.pk
             ).update(
                 user=user
             )
 
-            # Keep current object updated
-            self.user = user
-
-        # --------------------------------
-        # 4. Update existing patient user
-        # --------------------------------
-
+        # 4. Update existing patient login account
         else:
 
             user = self.user
@@ -227,6 +229,8 @@ class Patient(models.Model):
             f"{self.first_name} "
             f"{self.last_name}"
         )
+
+
 class MedicalRecord(models.Model):
 
     patient = models.ForeignKey(

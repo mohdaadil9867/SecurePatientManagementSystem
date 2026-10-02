@@ -1,0 +1,139 @@
+{% extends "hospital/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header">
+            <h4>
+                Edit Patient Information
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <div class="mb-3">
+
+                <strong>Patient ID:</strong>
+
+                {{ patient.patient_id }}
+
+            </div>
+
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                {% csrf_token %}
+
+
+                <!-- Patient Basic Information -->
+
+                {{ form.as_p }}
+
+
+                <hr>
+
+
+                <!-- Doctor Assignment -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        <strong>Assign Doctor</strong>
+                    </label>
+
+                    <select
+                        name="assigned_doctor"
+                        class="form-control"
+                    >
+
+                        <option value="">
+                            -- Select Doctor --
+                        </option>
+
+                        {% for doctor in doctors %}
+
+                            <option
+                                value="{{ doctor.id }}"
+                                {% if patient.assigned_doctor_id == doctor.id %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ doctor.get_full_name|default:doctor.username }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Billing Assignment -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        <strong>Assign Billing Staff</strong>
+                    </label>
+
+                    <select
+                        name="assigned_billing_staff"
+                        class="form-control"
+                    >
+
+                        <option value="">
+                            -- Select Billing Staff --
+                        </option>
+
+                        {% for staff in billing_staff %}
+
+                            <option
+                                value="{{ staff.id }}"
+                                {% if patient.assigned_billing_staff_id == staff.id %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ staff.get_full_name|default:staff.username }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    Save Changes
+                </button>
+
+
+                <a
+                    href="{% url 'hospital_patients' %}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

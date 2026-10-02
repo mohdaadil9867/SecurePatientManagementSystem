@@ -190,6 +190,12 @@ path(
 ),
 
 path(
+    "patient/<int:pk>/edit/",
+    views.edit_patient,
+    name="edit_patient"
+),
+
+path(
         "doctor/patient/<int:patient_id>/add-record/",
         views.add_medical_record,
         name="add_medical_record",
@@ -265,6 +271,11 @@ path(
         "hospital/logout/",
         views.hospital_logout,
         name="hospital_logout",
+),
+path(
+    "hospital/patient/<int:pk>/edit/",
+    views.edit_patient,
+    name="edit_patient"
 ),
 
 

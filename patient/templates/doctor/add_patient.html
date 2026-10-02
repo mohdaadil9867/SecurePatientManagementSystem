@@ -92,6 +92,55 @@
                 Upload JPG, JPEG or PNG image.
             </small>
         </div>
+        
+<!-- Billing Staff Assignment -->
+
+<div class="mb-3">
+
+    <label
+        for="assigned_billing_staff"
+        class="form-label fw-semibold"
+    >
+        Assign Billing Staff
+    </label>
+
+    <select
+        name="assigned_billing_staff"
+        id="assigned_billing_staff"
+        class="form-select"
+    >
+
+        <option value="">
+            No specific Billing Staff
+            (All Billing Staff can access)
+        </option>
+
+        {% for staff in billing_staff %}
+
+            <option value="{{ staff.id }}">
+
+                {{ staff.get_full_name|default:staff.username }}
+
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+    <small class="text-muted">
+
+        If you select a Billing Staff member,
+        only that member can access this patient's
+        billing information and medical records.
+
+        If you leave it blank, all Billing Staff members
+        can access the patient.
+
+    </small>
+
+</div>
+
+
 
         <!-- STATUS -->
         <div style="margin-bottom:20px;">

@@ -185,6 +185,12 @@
             >
                 Edit Record
             </a>
+            <a
+    href="{% url 'edit_patient' patient.pk %}"
+    class="btn btn-warning"
+>
+    Edit Patient Information
+</a>
 
         </div>
 
@@ -228,6 +234,12 @@
     >
         + Add Medical Record
     </a>
+    <a
+    href="{% url 'edit_patient' patient.pk %}"
+    class="btn btn-warning btn-sm"
+>
+    Edit
+</a>
 
 
     <br>

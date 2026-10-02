@@ -1,3 +1,4 @@
+
 {% extends "hospital/base.html" %}
 
 {% block title %}
@@ -78,6 +79,10 @@ Hospital Patients
 
                             <th>
                                 Status
+                            </th>
+
+                            <th>
+                                Action
                             </th>
 
                         </tr>
@@ -200,6 +205,20 @@ Hospital Patients
                             </td>
 
 
+                            <!-- EDIT PATIENT -->
+
+                            <td class="text-center">
+
+                                <a
+                                    href="{% url 'edit_patient' patient.pk %}"
+                                    class="btn btn-warning btn-sm"
+                                >
+                                    Edit
+                                </a>
+
+                            </td>
+
+
                         </tr>
 
                         {% empty %}
@@ -207,7 +226,7 @@ Hospital Patients
                         <tr>
 
                             <td
-                                colspan="7"
+                                colspan="8"
                                 class="text-center"
                             >
                                 No patients found.
@@ -230,3 +249,4 @@ Hospital Patients
 </div>
 
 {% endblock %}
+

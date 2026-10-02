@@ -1,62 +1,116 @@
-{% extends 'billing/base.html' %}
+
+{% extends "billing/base.html" %}
+
+{% block title %}
+Billing Profile
+{% endblock %}
 
 {% block content %}
 
-<div class="card shadow">
+<div class="container mt-4">
 
-<div class="card-header bg-primary text-white">
+    <div class="card shadow border-0">
 
-<h3>Billing Staff Profile</h3>
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="bi bi-person-circle"></i>
+                Billing Staff Profile
+            </h4>
+        </div>
 
-</div>
+        <div class="card-body">
 
-<div class="card-body">
+            <div class="row mb-3">
 
-<table class="table">
+                <div class="col-md-4 fw-bold">
+                    Username
+                </div>
 
-<tr>
+                <div class="col-md-8">
+                    {{ user.username }}
+                </div>
 
-<th>Name</th>
+            </div>
 
-<td>{{ user.first_name }} {{ user.last_name }}</td>
+            <div class="row mb-3">
 
-</tr>
+                <div class="col-md-4 fw-bold">
+                    Full Name
+                </div>
 
-<tr>
+                <div class="col-md-8">
+                    {{ user.get_full_name|default:"Not provided" }}
+                </div>
 
-<th>Username</th>
+            </div>
 
-<td>{{ user.username }}</td>
+            <div class="row mb-3">
 
-</tr>
+                <div class="col-md-4 fw-bold">
+                    Email
+                </div>
 
-<tr>
+                <div class="col-md-8">
+                    {{ user.email|default:"Not provided" }}
+                </div>
 
-<th>Email</th>
+            </div>
 
-<td>{{ user.email }}</td>
+            <div class="row mb-3">
 
-</tr>
+                <div class="col-md-4 fw-bold">
+                    Role
+                </div>
 
-<tr>
+                <div class="col-md-8">
 
-<th>Role</th>
+                    <span class="badge bg-primary">
+                        Billing Staff
+                    </span>
 
-<td>Billing Staff</td>
+                </div>
 
-</tr>
+            </div>
 
-<tr>
+            <div class="row mb-3">
 
-<th>Last Login</th>
+                <div class="col-md-4 fw-bold">
+                    Account Status
+                </div>
 
-<td>{{ user.last_login }}</td>
+                <div class="col-md-8">
 
-</tr>
+                    {% if user.is_active %}
 
-</table>
+                        <span class="badge bg-success">
+                            Active
+                        </span>
 
-</div>
+                    {% else %}
+
+                        <span class="badge bg-danger">
+                            Inactive
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <hr>
+
+            <a href="{% url 'billing_dashboard' %}"
+               class="btn btn-secondary">
+
+                <i class="bi bi-arrow-left"></i>
+                Back to Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
 
 </div>
 
